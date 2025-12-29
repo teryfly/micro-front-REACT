@@ -1,31 +1,7 @@
 import React from 'react';
-import styles from './Form.module.css';
 
 /**
  * Select dropdown component
- * 
- * @param {Object} props
- * @param {string} props.name - Select name and ID
- * @param {string} props.label - Select label
- * @param {string} props.value - Selected value
- * @param {Function} props.onChange - Change handler
- * @param {Array<Object>} props.options - Options array [{value, label}]
- * @param {string} [props.error] - Error message
- * @param {boolean} [props.required=false] - Required field
- * @param {boolean} [props.disabled=false] - Disabled state
- * @param {string} [props.placeholder='Select...'] - Placeholder option text
- * 
- * @example
- * <Select
- *   name="country"
- *   label="Country"
- *   value={country}
- *   onChange={(e) => setCountry(e.target.value)}
- *   options={[
- *     { value: 'us', label: 'United States' },
- *     { value: 'ca', label: 'Canada' }
- *   ]}
- * />
  */
 const Select = ({
   name,
@@ -39,11 +15,44 @@ const Select = ({
   placeholder = 'Select...',
   ...props
 }) => {
+  const formGroupStyle = {
+    display: 'flex',
+    flexDirection: 'column',
+    gap: '4px',
+  };
+
+  const labelStyle = {
+    fontSize: '14px',
+    fontWeight: 500,
+    color: '#333',
+  };
+
+  const requiredStyle = {
+    color: '#f44336',
+    marginLeft: '4px',
+  };
+
+  const selectStyle = {
+    padding: '10px 12px',
+    fontSize: '14px',
+    fontFamily: 'inherit',
+    border: `1px solid ${error ? '#f44336' : '#ddd'}`,
+    borderRadius: '4px',
+    backgroundColor: '#ffffff',
+    color: '#333',
+    cursor: 'pointer',
+  };
+
+  const errorTextStyle = {
+    fontSize: '12px',
+    color: '#f44336',
+  };
+
   return (
-    <div className={styles.formGroup}>
-      <label htmlFor={name} className={styles.label}>
+    <div style={formGroupStyle}>
+      <label htmlFor={name} style={labelStyle}>
         {label}
-        {required && <span className={styles.required} aria-label="required">*</span>}
+        {required && <span style={requiredStyle} aria-label="required">*</span>}
       </label>
       
       <select
@@ -52,7 +61,7 @@ const Select = ({
         value={value || ''}
         onChange={onChange}
         disabled={disabled}
-        className={`${styles.select} ${error ? styles.inputError : ''}`}
+        style={selectStyle}
         aria-invalid={!!error}
         aria-describedby={error ? `${name}-error` : undefined}
         aria-required={required}
@@ -67,7 +76,7 @@ const Select = ({
       </select>
       
       {error && (
-        <span id={`${name}-error`} className={styles.errorText} role="alert">
+        <span id={`${name}-error`} style={errorTextStyle} role="alert">
           {error}
         </span>
       )}

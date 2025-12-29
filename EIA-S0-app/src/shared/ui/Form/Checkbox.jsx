@@ -1,23 +1,7 @@
 import React from 'react';
-import styles from './Form.module.css';
 
 /**
  * Checkbox component
- * 
- * @param {Object} props
- * @param {string} props.name - Checkbox name and ID
- * @param {string} props.label - Checkbox label
- * @param {boolean} props.checked - Checked state
- * @param {Function} props.onChange - Change handler
- * @param {boolean} [props.disabled=false] - Disabled state
- * 
- * @example
- * <Checkbox
- *   name="agree"
- *   label="I agree to terms and conditions"
- *   checked={agreed}
- *   onChange={(e) => setAgreed(e.target.checked)}
- * />
  */
 const Checkbox = ({
   name,
@@ -27,9 +11,31 @@ const Checkbox = ({
   disabled = false,
   ...props
 }) => {
+  const checkboxGroupStyle = {
+    display: 'flex',
+    alignItems: 'center',
+  };
+
+  const checkboxLabelStyle = {
+    display: 'flex',
+    alignItems: 'center',
+    gap: '8px',
+    cursor: disabled ? 'not-allowed' : 'pointer',
+    userSelect: 'none',
+    fontSize: '14px',
+    color: '#333',
+  };
+
+  const checkboxStyle = {
+    width: '18px',
+    height: '18px',
+    cursor: disabled ? 'not-allowed' : 'pointer',
+    accentColor: '#4CAF50',
+  };
+
   return (
-    <div className={styles.checkboxGroup}>
-      <label className={styles.checkboxLabel} htmlFor={name}>
+    <div style={checkboxGroupStyle}>
+      <label style={checkboxLabelStyle} htmlFor={name}>
         <input
           id={name}
           type="checkbox"
@@ -37,7 +43,7 @@ const Checkbox = ({
           checked={checked}
           onChange={onChange}
           disabled={disabled}
-          className={styles.checkbox}
+          style={checkboxStyle}
           {...props}
         />
         <span>{label}</span>

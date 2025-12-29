@@ -1,4 +1,4 @@
-import React, { createContext, useMemo, useEffect } from 'react';
+import React, { createContext, useMemo } from 'react';
 import apiClient from '../../shared/api/apiClient';
 
 /**
@@ -9,87 +9,28 @@ export const ApiContext = createContext(null);
 
 /**
  * API Provider - Provides API client to all child components
- * Supports dynamic base URL configuration for both standalone and embedded modes
+ * Supports dynamic base URL configuration for Module Federation scenarios
  * 
  * @param {Object} props
  * @param {React.ReactNode} props.children - Child components
- * @param {string} [props.baseURL] - Base URL from URL params (standalone)
- * @param {string} [props.externalBaseURL] - Base URL from host app (embedded)
- * @param {boolean} [props.embedded=false] - Embedded mode flag
- * @param {Object} [props.eventBus] - Event bus for config updates
+ * @param {string} [props.baseURL] - Optional base URL override for API client
  * 
  * @example
- * // Standalone mode
- * <ApiProvider baseURL="https://api.local.com">
- *   <App />
- * </ApiProvider>
- * 
- * // Embedded mode
- * <ApiProvider 
- *   externalBaseURL="https://api.production.com"
- *   embedded={true}
- *   eventBus={eventBus}
- * >
+ * <ApiProvider baseURL="https://api.production.com">
  *   <App />
  * </ApiProvider>
  */
-export const ApiProvider = ({ 
-  children, 
-  baseURL: localBaseURL,
-  externalBaseURL,
-  embedded = false,
-  eventBus = null,
-}) => {
-  // Priority: externalBaseURL > localBaseURL > env default
-  const finalBaseURL = externalBaseURL || localBaseURL;
-
-  /**
-   * Configure base URL on mount and when it changes
-   */
+export const ApiProvider = ({ children, baseURL }) => {
+  // Configure base URL if provided (for Module Federation)
+  // This allows the host application to override the API endpoint
   useMemo(() => {
-    if (finalBaseURL) {
+    if (baseURL) {
       const instance = apiClient.getInstance();
       if (instance) {
-        instance.defaults.baseURL = finalBaseURL;
-        
-        if (process.env.NODE_ENV === 'development') {
-          console.log('🔗 [ApiProvider] Base URL configured:', {
-            baseURL: finalBaseURL,
-            source: externalBaseURL ? 'host-app' : 'local',
-          });
-        }
+        instance.defaults.baseURL = baseURL;
       }
     }
-  }, [finalBaseURL, externalBaseURL]);
-
-  /**
-   * Listen for API base URL changes from host app (embedded mode)
-   */
-  useEffect(() => {
-    if (!embedded || !eventBus) return;
-
-    const handleApiBaseUrlChange = (data) => {
-      const { apiBaseUrl } = data;
-      
-      if (process.env.NODE_ENV === 'development') {
-        console.log('🔗 [ApiProvider] Base URL changed via EventBus:', apiBaseUrl);
-      }
-
-      const instance = apiClient.getInstance();
-      if (instance && apiBaseUrl) {
-        instance.defaults.baseURL = apiBaseUrl;
-      }
-    };
-
-    // Listen for both host and local events
-    eventBus.on('host:config:apiBaseUrl:changed', handleApiBaseUrlChange);
-    eventBus.on('local:config:apiBaseUrl:changed', handleApiBaseUrlChange);
-
-    return () => {
-      eventBus.off('host:config:apiBaseUrl:changed', handleApiBaseUrlChange);
-      eventBus.off('local:config:apiBaseUrl:changed', handleApiBaseUrlChange);
-    };
-  }, [embedded, eventBus]);
+  }, [baseURL]);
 
   // Memoize context value to prevent unnecessary re-renders
   const value = useMemo(() => ({ apiClient }), []);

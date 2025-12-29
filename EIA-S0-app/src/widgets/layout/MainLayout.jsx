@@ -1,60 +1,48 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import Header from './Header';
 import Sidebar from './Sidebar';
-import { useMode } from '../../app/providers/ModeContext';
-import stylesImport from './Layout.module.css';
 
 /**
  * Main layout component
- * Provides application shell with optional header, sidebar, and content area.
- * In embedded mode, Header is hidden to avoid duplication with host app.
- *
- * @param {Object} props
- * @param {React.ReactNode} props.children - Page content
+ * Provides application shell with header, sidebar, and content area
+ * 
+ * Note: Using inline styles temporarily until CSS modules are fixed
  */
 const MainLayout = ({ children }) => {
-  // Defensive fallback: avoid runtime crash if CSS modules loader is misconfigured
-  const styles = stylesImport || {};
-
-  const { isEmbedded } = useMode();
   const [sidebarOpen, setSidebarOpen] = useState(true);
 
-  // On small screens, start with sidebar closed by default
-  useEffect(() => {
-    const mediaQuery = window.matchMedia('(max-width: 768px)');
-
-    const update = () => {
-      if (mediaQuery.matches) {
-        setSidebarOpen(false);
-      } else {
-        setSidebarOpen(true);
-      }
-    };
-
-    update();
-
-    // Safari fallback: addEventListener may not exist on MediaQueryList
-    if (typeof mediaQuery.addEventListener === 'function') {
-      mediaQuery.addEventListener('change', update);
-      return () => mediaQuery.removeEventListener('change', update);
-    }
-
-    mediaQuery.addListener(update);
-    return () => mediaQuery.removeListener(update);
-  }, []);
-
   const toggleSidebar = () => {
-    setSidebarOpen((prev) => !prev);
+    setSidebarOpen(!sidebarOpen);
+  };
+
+  const layoutStyle = {
+    display: 'flex',
+    flexDirection: 'column',
+    height: '100vh',
+    overflow: 'hidden',
+  };
+
+  const containerStyle = {
+    display: 'flex',
+    flex: 1,
+    overflow: 'hidden',
+  };
+
+  const contentStyle = {
+    flex: 1,
+    overflowY: 'auto',
+    padding: '24px',
+    backgroundColor: '#ffffff',
   };
 
   return (
-    <div className={styles.layout}>
-      {/* Conditional Header - only in standalone mode */}
-      {!isEmbedded && <Header onMenuClick={toggleSidebar} />}
-
-      <div className={styles.container}>
-        <Sidebar isOpen={sidebarOpen} embedded={isEmbedded} />
-        <main className={styles.content} role="main">
+    <div style={layoutStyle}>
+      <Header onMenuClick={toggleSidebar} />
+      
+      <div style={containerStyle}>
+        <Sidebar isOpen={sidebarOpen} />
+        
+        <main style={contentStyle}>
           {children}
         </main>
       </div>
