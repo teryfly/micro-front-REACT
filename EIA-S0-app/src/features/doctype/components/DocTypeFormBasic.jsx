@@ -4,13 +4,14 @@
  * @module DocTypeFormBasic
  */
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useMemo } from 'react';
 import Form from '../../../shared/ui/Form/Form';
 import Input from '../../../shared/ui/Form/Input';
 import Select from '../../../shared/ui/Form/Select';
 import TextArea from '../../../shared/ui/Form/TextArea';
 import Button from '../../../shared/ui/Button';
 import { DOCTYPE_LIMITS } from '../constants/docType.constants';
+import { useCategory } from '../../category/hooks/useCategory';
 
 /**
  * DocType form - Step 1: Basic information
@@ -30,20 +31,26 @@ const DocTypeFormBasic = ({
   onCancel,
   isEditMode = false
 }) => {
-  const [categories, setCategories] = useState([]);
+  // Use real category data
+  const { categories } = useCategory();
+  
   const [promptTemplates, setPromptTemplates] = useState([]);
 
   useEffect(() => {
-    setCategories([
-      { value: 'cat1', label: 'Legal Documents' },
-      { value: 'cat2', label: 'Financial Documents' },
-    ]);
-    
+    // Mock templates for now (Phase 2.4 will implement real templates)
     setPromptTemplates([
       { value: 'tpl1', label: 'Standard Contract Template' },
       { value: 'tpl2', label: 'Policy Document Template' },
     ]);
   }, []);
+
+  // Transform categories to options
+  const categoryOptions = useMemo(() => {
+    return categories.map(cat => ({
+      value: cat.id,
+      label: cat.name,
+    }));
+  }, [categories]);
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -88,7 +95,7 @@ const DocTypeFormBasic = ({
         label="Category"
         value={formData.categoryId}
         onChange={(e) => onFieldChange('categoryId', e.target.value)}
-        options={categories}
+        options={categoryOptions}
         placeholder="Select category..."
       />
 
