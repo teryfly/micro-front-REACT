@@ -11,6 +11,7 @@ module.exports = {
     headers: {
       'Access-Control-Allow-Origin': '*', // 允许跨域
     },
+    historyApiFallback: true, // React Router support
   },
 
   output: {
@@ -19,6 +20,23 @@ module.exports = {
 
   module: {
     rules: [
+      // CSS Modules support
+      {
+        test: /\.module\.css$/,
+        use: [
+          'style-loader',
+          {
+            loader: 'css-loader',
+            options: {
+              esModule: false, // ensure `import styles from './x.module.css'` works as expected
+              modules: {
+                localIdentName: '[name]__[local]--[hash:base64:5]',
+              },
+            },
+          },
+        ],
+      },
+
       {
         test: /\.jsx?$/,
         exclude: /node_modules/,
@@ -37,14 +55,13 @@ module.exports = {
   },
 
   plugins: [
-    // EIA-S0-app 暴露模块
     new ModuleFederationPlugin({
-      name: 'remoteApp2', // 远程容器名称
+      name: 'remoteApp2',
       filename: 'remoteEntry.js',
 
       exposes: {
         './Button': './src/Button',
-        './App': './src/App', // 新增：暴露完整首页
+        './App': './src/App',
       },
 
       shared: {

@@ -1,13 +1,20 @@
 import React from 'react';
-import Button from './Button';
+import AppProviders from './app/AppProviders';
+import AppRouter from './app/routes/AppRouter';
 
-function App() {
+/**
+ * Main application component
+ * Can run standalone or embedded via Module Federation.
+ *
+ * @param {Object} props
+ * @param {string} [props.token] - Authentication token (from host app)
+ * @param {string} [props.baseURL] - API base URL override (from host app)
+ */
+function App({ token, baseURL }) {
   return (
-    <div style={{ padding: '20px', fontFamily: 'Arial' }}>
-      <h1>A-📡 Remote App (远程应用A)</h1>
-      <p>这是运行在 localhost:7002 的独立应用A</p>
-      <Button />
-    </div>
+    <AppProviders token={token} baseURL={baseURL}>
+      <AppRouter />
+    </AppProviders>
   );
 }
 
