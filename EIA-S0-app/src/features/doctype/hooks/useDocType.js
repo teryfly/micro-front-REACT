@@ -1,22 +1,14 @@
 /**
- * DocType State Management Hook
- * Manages DocType list, CRUD operations, and event simulation
- * @module useDocType
+ * useDocType Hook
+ * State management for DocType CRUD operations
  */
 
 import { useState, useEffect, useCallback } from 'react';
 import { docTypeService } from '../services/docTypeService';
-import { useNotification } from '../../../shared/hooks/useNotification';
-import { simulateEvent } from '../../../shared/utils/eventSimulator';
-import { EVENT_TYPES } from '../../../shared/constants/eventTypes';
+import { useNotification } from '../../../core/hooks';
+import { simulateEvent } from '../../../core/utils';
+import { EVENT_TYPES } from '../../../core/constants';
 
-/**
- * DocType state management hook
- * @returns {Object} DocType state and CRUD actions
- * 
- * @example
- * const { docTypes, loading, createDocType, updateDocType } = useDocType();
- */
 export const useDocType = () => {
   const [docTypes, setDocTypes] = useState([]);
   const [selectedDocType, setSelectedDocType] = useState(null);
@@ -27,6 +19,7 @@ export const useDocType = () => {
   const fetchDocTypes = useCallback(async () => {
     setLoading(true);
     setError(null);
+    
     try {
       const data = await docTypeService.getAll();
       setDocTypes(data);
@@ -61,6 +54,7 @@ export const useDocType = () => {
         name: data.name,
         status: 'ENABLED',
         operationType: 'CREATED',
+        timestamp: new Date().toISOString(),
       });
       
       showNotification('DocType created successfully', 'success');
@@ -78,9 +72,11 @@ export const useDocType = () => {
       
       simulateEvent(EVENT_TYPES.DOCTYPE_UPDATED, {
         docTypeId: id,
+        docTypeCode: selectedDocType?.code || 'UNKNOWN',
         name: data.name,
         status: 'ENABLED',
         operationType: 'UPDATED',
+        timestamp: new Date().toISOString(),
       });
       
       showNotification('DocType updated successfully', 'success');
@@ -89,7 +85,7 @@ export const useDocType = () => {
       showNotification(err.message, 'error');
       throw err;
     }
-  }, [fetchDocTypes, showNotification]);
+  }, [fetchDocTypes, showNotification, selectedDocType]);
 
   const deleteDocType = useCallback(async (id) => {
     try {
@@ -99,6 +95,7 @@ export const useDocType = () => {
         docTypeId: id,
         status: 'DISABLED',
         operationType: 'DELETED',
+        timestamp: new Date().toISOString(),
       });
       
       showNotification('DocType deleted successfully', 'success');
