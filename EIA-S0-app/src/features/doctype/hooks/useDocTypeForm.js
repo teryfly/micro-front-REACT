@@ -74,7 +74,26 @@ export const useDocTypeForm = (initialData, onSubmit) => {
   const handleSubmit = async () => {
     if (validateStep(currentStep)) {
       try {
-        await onSubmit(formData);
+        // Transform form data to match Swagger spec
+        const submitData = {
+          code: formData.code,
+          name: formData.name,
+          description: formData.description || null,
+          allowedPhases: formData.allowedPhases,
+          defaultPhase: formData.defaultPhase,
+          // Only include categoryId if it's a valid UUID (not empty string)
+          categoryId: formData.categoryId && formData.categoryId.trim() !== '' 
+            ? formData.categoryId 
+            : null,
+          // Only include aiDraftPromptTemplateId if it's a valid UUID (not empty string)
+          aiDraftPromptTemplateId: formData.aiDraftPromptTemplateId && formData.aiDraftPromptTemplateId.trim() !== '' 
+            ? formData.aiDraftPromptTemplateId 
+            : null,
+          metadata: formData.metadata || {},
+          customFields: formData.customFields || {},
+        };
+
+        await onSubmit(submitData);
         setFormData(DOCTYPE_DEFAULTS);
         setCurrentStep(1);
         setErrors({});

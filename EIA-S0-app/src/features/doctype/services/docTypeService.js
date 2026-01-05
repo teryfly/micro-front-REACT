@@ -48,7 +48,21 @@ export const docTypeService = {
    * });
    */
   create: async (data) => {
-    return await apiClient.post(endpoints.doctype.create, data);
+    // Clean data to match Swagger spec exactly
+    const cleanedData = {
+      code: data.code,
+      name: data.name,
+      description: data.description || null,
+      allowedPhases: data.allowedPhases || [],
+      defaultPhase: data.defaultPhase,
+      // Remove optional fields if they are null/empty to avoid validation errors
+      ...(data.categoryId ? { categoryId: data.categoryId } : {}),
+      ...(data.aiDraftPromptTemplateId ? { aiDraftPromptTemplateId: data.aiDraftPromptTemplateId } : {}),
+      metadata: data.metadata || null,
+      customFields: data.customFields || null,
+    };
+
+    return await apiClient.post(endpoints.doctype.create, cleanedData);
   },
 
   /**
@@ -65,7 +79,20 @@ export const docTypeService = {
    * });
    */
   update: async (id, data) => {
-    return await apiClient.put(endpoints.doctype.update(id), data);
+    // Clean data to match Swagger spec exactly
+    const cleanedData = {
+      name: data.name,
+      description: data.description || null,
+      allowedPhases: data.allowedPhases || [],
+      defaultPhase: data.defaultPhase,
+      // Remove optional fields if they are null/empty
+      ...(data.categoryId ? { categoryId: data.categoryId } : {}),
+      ...(data.aiDraftPromptTemplateId ? { aiDraftPromptTemplateId: data.aiDraftPromptTemplateId } : {}),
+      metadata: data.metadata || null,
+      customFields: data.customFields || null,
+    };
+
+    return await apiClient.put(endpoints.doctype.update(id), cleanedData);
   },
 
   /**

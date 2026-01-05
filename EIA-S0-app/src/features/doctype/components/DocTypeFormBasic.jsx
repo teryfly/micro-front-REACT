@@ -4,7 +4,7 @@
  * @module DocTypeFormBasic
  */
 
-import React, { useEffect, useState, useMemo } from 'react';
+import React, { useMemo } from 'react';
 import Form from '../../../shared/ui/Form/Form';
 import Input from '../../../shared/ui/Form/Input';
 import Select from '../../../shared/ui/Form/Select';
@@ -12,6 +12,7 @@ import TextArea from '../../../shared/ui/Form/TextArea';
 import Button from '../../../shared/ui/Button';
 import { DOCTYPE_LIMITS } from '../constants/docType.constants';
 import { useCategory } from '../../category/hooks/useCategory';
+import { usePromptTemplate } from '../../prompt-template/hooks/usePromptTemplate';
 
 /**
  * DocType form - Step 1: Basic information
@@ -34,15 +35,8 @@ const DocTypeFormBasic = ({
   // Use real category data
   const { categories } = useCategory();
   
-  const [promptTemplates, setPromptTemplates] = useState([]);
-
-  useEffect(() => {
-    // Mock templates for now (Phase 2.4 will implement real templates)
-    setPromptTemplates([
-      { value: 'tpl1', label: 'Standard Contract Template' },
-      { value: 'tpl2', label: 'Policy Document Template' },
-    ]);
-  }, []);
+  // Use real prompt template data
+  const { promptTemplates } = usePromptTemplate();
 
   // Transform categories to options
   const categoryOptions = useMemo(() => {
@@ -51,6 +45,16 @@ const DocTypeFormBasic = ({
       label: cat.name,
     }));
   }, [categories]);
+
+  // Filter prompt templates by DocType scope and transform to options
+  const promptTemplateOptions = useMemo(() => {
+    return promptTemplates
+      .filter(template => template.scope === 'DocType')
+      .map(template => ({
+        value: template.id,
+        label: `${template.agentName} (v${template.version})`,
+      }));
+  }, [promptTemplates]);
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -104,7 +108,7 @@ const DocTypeFormBasic = ({
         label="AI Draft Prompt Template"
         value={formData.aiDraftPromptTemplateId}
         onChange={(e) => onFieldChange('aiDraftPromptTemplateId', e.target.value)}
-        options={promptTemplates}
+        options={promptTemplateOptions}
         placeholder="Select template..."
       />
 
