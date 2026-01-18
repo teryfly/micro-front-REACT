@@ -15,51 +15,47 @@ export const NotificationContext = createContext(null);
  * @param {React.ReactNode} props.children - Child components
  * @param {boolean} [props.embedded=false] - Embedded mode flag
  * @param {Object} [props.eventBus] - Event bus for cross-app notifications
- * 
- * @example
- * <NotificationProvider embedded={true} eventBus={eventBus}>
- *   <App />
- * </NotificationProvider>
  */
 export const NotificationProvider = ({ children, embedded = false, eventBus = null }) => {
   const [notifications, setNotifications] = useState([]);
 
   /**
    * Show notification toast
-   * In embedded mode, also sends error notifications to host app
+   * In embedded mode, delegates to host app via EventBus
    * 
    * @param {string} message - Notification message text
    * @param {string} [type='info'] - Notification type: 'success' | 'error' | 'warning' | 'info'
    * @param {number} [duration=3000] - Auto-dismiss duration in milliseconds
    */
   const showNotification = useCallback((message, type = 'info', duration = 3000) => {
+    // FIX: If embedded, delegate ALL notifications to host app and return
+    if (embedded && eventBus) {
+      console.log('📤 [Notification] Delegating to host:', { message, type });
+      eventBus.emit('subapp:notification:show', {
+        message,
+        type,
+        duration,
+        source: 'eia-s0-app',
+        timestamp: new Date().toISOString(),
+      });
+      return; // Do not render local notification
+    }
+
+    // Standalone mode: render local notification
     const id = Date.now();
     const notification = { id, message, type, duration };
     
     setNotifications(prev => {
       const newNotifications = [...prev, notification];
-      
-      // Limit to 5 notifications
       if (newNotifications.length > 5) {
         newNotifications.shift();
       }
-      
       return newNotifications;
     });
 
-    // Auto-dismiss after duration
     setTimeout(() => {
       setNotifications(prev => prev.filter(n => n.id !== id));
     }, duration);
-
-    // Send error notifications to host app (embedded mode)
-    if (embedded && eventBus && type === 'error') {
-      eventBus.emit('subapp:notification:error', {
-        message,
-        source: 'eia-s0-app',
-        timestamp: new Date().toISOString(),
-      });
-    }
   }, [embedded, eventBus]);
 
   /**
@@ -69,34 +65,13 @@ export const NotificationProvider = ({ children, embedded = false, eventBus = nu
     setNotifications([]);
   }, []);
 
-  /**
-   * Listen for global notifications from host app (embedded mode)
-   */
-  useEffect(() => {
-    if (!embedded || !eventBus) return;
-
-    const handleGlobalNotification = (data) => {
-      const { message, type = 'info', duration = 3000 } = data;
-      showNotification(message, type, duration);
-    };
-
-    // Listen for both host and local notification events
-    eventBus.on('host:notification:global', handleGlobalNotification);
-    eventBus.on('local:notification:show', handleGlobalNotification);
-
-    return () => {
-      eventBus.off('host:notification:global', handleGlobalNotification);
-      eventBus.off('local:notification:show', handleGlobalNotification);
-    };
-  }, [embedded, eventBus, showNotification]);
-
   const value = { showNotification, clearNotifications };
 
   return (
     <NotificationContext.Provider value={value}>
       {children}
       
-      {/* Notification Container */}
+      {/* Notification Container - Only renders in Standalone mode because notifications array stays empty in embedded */}
       <div style={{
         position: 'fixed',
         top: 20,

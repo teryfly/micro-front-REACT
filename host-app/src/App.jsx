@@ -2,24 +2,23 @@
  * 应用入口组件
  * 集成所有Provider和路由
  */
-
 import React from 'react';
 import { BrowserRouter } from 'react-router-dom';
 import { ConfigProvider } from './config/ConfigContext';
 import { ThemeProvider } from './theme/ThemeContext';
+// FIX: Import NotificationProvider
+import { NotificationProvider } from './context/NotificationContext'; 
 import AppRouter from './router/AppRouter';
 import AppRegistry from './core/AppRegistry';
 import { useConfig } from './config/useConfig';
 import { usePreloadApps } from './core/useAppLoader';
 import './theme/globalStyles.css';
-
 /**
  * 应用初始化组件
  */
 function AppInitializer() {
   const { config, apps, loading, error } = useConfig();
-
-  // FIX: Log initialization state
+  // Log initialization state
   React.useEffect(() => {
     console.log('[AppInitializer] State:', {
       hasConfig: !!config,
@@ -28,7 +27,6 @@ function AppInitializer() {
       hasError: !!error,
     });
   }, [config, apps, loading, error]);
-
   // 注册所有应用
   React.useEffect(() => {
     if (apps && apps.length > 0) {
@@ -36,10 +34,8 @@ function AppInitializer() {
       AppRegistry.registerApps(apps);
     }
   }, [apps]);
-
   // 预加载应用
   usePreloadApps(apps);
-
   if (loading) {
     return (
       <div style={{
@@ -53,7 +49,6 @@ function AppInitializer() {
       </div>
     );
   }
-
   if (error) {
     return (
       <div style={{
@@ -84,17 +79,13 @@ function AppInitializer() {
       </div>
     );
   }
-
-  // FIX: BrowserRouter must wrap AppRouter directly
   console.log('[AppInitializer] Rendering AppRouter');
-  
   return (
     <BrowserRouter>
       <AppRouter />
     </BrowserRouter>
   );
 }
-
 /**
  * 根组件
  */
@@ -102,7 +93,10 @@ export default function App() {
   return (
     <ConfigProvider>
       <ThemeProvider>
-        <AppInitializer />
+        {/* FIX: Wrap with NotificationProvider */}
+        <NotificationProvider>
+          <AppInitializer />
+        </NotificationProvider>
       </ThemeProvider>
     </ConfigProvider>
   );
