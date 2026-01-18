@@ -1,0 +1,149 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Micro Frontend Apps Configuration",
+  "type": "object",
+  "required": ["version", "apps"],
+  "properties": {
+    "version": {
+      "type": "string",
+      "description": "配置文件版本号"
+    },
+    "apps": {
+      "type": "array",
+      "description": "子应用配置列表",
+      "items": {
+        "type": "object",
+        "required": ["id", "name", "displayName", "entry", "route", "enabled"],
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "应用唯一标识"
+          },
+          "name": {
+            "type": "string",
+            "description": "Module Federation容器名称"
+          },
+          "displayName": {
+            "type": "string",
+            "description": "菜单显示名称"
+          },
+          "description": {
+            "type": "string",
+            "description": "应用描述"
+          },
+          "entry": {
+            "type": "object",
+            "required": ["development", "production"],
+            "properties": {
+              "development": {
+                "type": "string",
+                "format": "uri",
+                "description": "开发环境入口地址"
+              },
+              "production": {
+                "type": "string",
+                "format": "uri",
+                "description": "生产环境入口地址"
+              }
+            }
+          },
+          "route": {
+            "type": "string",
+            "pattern": "^/",
+            "description": "应用路由前缀"
+          },
+          "icon": {
+            "type": "string",
+            "description": "菜单图标"
+          },
+          "group": {
+            "type": "string",
+            "description": "菜单分组名称"
+          },
+          "permissions": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "权限标识数组"
+          },
+          "defaultActive": {
+            "type": "boolean",
+            "description": "是否为默认激活应用"
+          },
+          "enabled": {
+            "type": "boolean",
+            "description": "是否启用该应用"
+          },
+          "version": {
+            "type": "string",
+            "description": "应用版本号"
+          },
+          "metadata": {
+            "type": "object",
+            "description": "应用元数据"
+          }
+        }
+      }
+    },
+    "menuGroups": {
+      "type": "array",
+      "description": "菜单分组配置",
+      "items": {
+        "type": "object",
+        "required": ["id", "name", "order"],
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "order": {
+            "type": "number"
+          },
+          "icon": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "branding": {
+      "type": "object",
+      "properties": {
+        "logo": {
+          "type": "string"
+        },
+        "title": {
+          "type": "string"
+        },
+        "showTitle": {
+          "type": "boolean"
+        }
+      }
+    },
+    "theme": {
+      "type": "object",
+      "properties": {
+        "defaultTheme": {
+          "type": "string",
+          "enum": ["light", "dark"]
+        },
+        "allowSwitch": {
+          "type": "boolean"
+        }
+      }
+    },
+    "communication": {
+      "type": "object",
+      "properties": {
+        "enableEventBus": {
+          "type": "boolean"
+        },
+        "enablePostMessage": {
+          "type": "boolean"
+        }
+      }
+    }
+  }
+}

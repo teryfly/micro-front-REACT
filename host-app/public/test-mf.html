@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Module Federation 测试</title>
+  <style>
+    body {
+      font-family: monospace;
+      padding: 20px;
+      background-color: #f5f5f5;
+    }
+    .container {
+      max-width: 800px;
+      margin: 0 auto;
+      background: white;
+      padding: 20px;
+      border-radius: 8px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+    button {
+      padding: 10px 20px;
+      margin: 10px 5px;
+      font-size: 14px;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      background-color: #1890ff;
+      color: white;
+    }
+    button:hover {
+      background-color: #096dd9;
+    }
+    #output {
+      margin-top: 20px;
+      padding: 16px;
+      background-color: #f0f0f0;
+      border-radius: 4px;
+      white-space: pre-wrap;
+      font-size: 12px;
+      max-height: 400px;
+      overflow-y: auto;
+    }
+    .success {
+      color: #52c41a;
+    }
+    .error {
+      color: #ff4d4f;
+    }
+    #app-container {
+      margin-top: 20px;
+      border: 2px dashed #1890ff;
+      min-height: 200px;
+      padding: 20px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>🧪 Module Federation 测试页面</h1>
+    <p>此页面用于测试远程模块加载是否正常工作</p>
+
+    <div>
+      <button onclick="testLoadRemote()">1. 测试加载远程容器</button>
+      <button onclick="testLoadButton()">2. 测试加载Button组件</button>
+      <button onclick="testLoadEmbeddedApp()">3. 测试加载EmbeddedApp</button>
+      <button onclick="testLoadApp()">4. 测试加载App组件</button>
+      <button onclick="clearOutput()">清除输出</button>
+    </div>
+
+    <div id="output">等待测试...</div>
+    <div id="app-container"></div>
+  </div>
+
+  <script>
+    function log(message, type = 'info') {
+      const output = document.getElementById('output');
+      const timestamp = new Date().toLocaleTimeString();
+      const className = type === 'error' ? 'error' : type === 'success' ? 'success' : '';
+      output.innerHTML += `<div class="${className}">[${timestamp}] ${message}</div>`;
+      output.scrollTop = output.scrollHeight;
+      console.log(message);
+    }
+
+    function clearOutput() {
+      document.getElementById('output').innerHTML = '输出已清除\n';
+      document.getElementById('app-container').innerHTML = '';
+    }
+
+    async function testLoadRemote() {
+      log('开始测试加载远程容器...');
+      
+      try {
+        const remoteUrl = 'http://localhost:7002/remoteEntry.js';
+        const scope = 'eiaS0App';
+        
+        log(`加载URL: ${remoteUrl}`);
+        log(`容器名: ${scope}`);
+        
+        // 检查容器是否已存在
+        if (window[scope]) {
+          log(`✅ 容器 ${scope} 已存在`, 'success');
+          log(`容器类型: ${typeof window[scope]}`);
+          log(`容器方法: ${Object.keys(window[scope]).join(', ')}`);
+          return;
+        }
+        
+        // 动态加载script
+        await new Promise((resolve, reject) => {
+          const script = document.createElement('script');
+          script.src = remoteUrl;
+          script.type = 'text/javascript';
+          script.async = true;
+          
+          script.onload = () => {
+            log('✅ remoteEntry.js 加载成功', 'success');
+            resolve();
+          };
+          
+          script.onerror = () => {
+            log('❌ remoteEntry.js 加载失败', 'error');
+            reject(new Error('Script load failed'));
+          };
+          
+          document.head.appendChild(script);
+        });
+        
+        // 检查容器
+        if (window[scope]) {
+          log(`✅ 容器 ${scope} 创建成功`, 'success');
+          log(`容器方法: ${Object.keys(window[scope]).join(', ')}`);
+        } else {
+          log(`❌ 容器 ${scope} 未找到`, 'error');
+          log(`当前window对象中的容器: ${Object.keys(window).filter(k => typeof window[k] === 'object' && window[k]?.init).join(', ')}`);
+        }
+        
+      } catch (error) {
+        log(`❌ 测试失败: ${error.message}`, 'error');
+      }
+    }
+
+    async function testLoadButton() {
+      log('开始测试加载Button组件...');
+      
+      try {
+        await testLoadRemote();
+        
+        const scope = 'eiaS0App';
+        const module = './Button';
+        
+        if (!window[scope]) {
+          log('❌ 容器未加载，请先执行测试1', 'error');
+          return;
+        }
+        
+        log(`初始化共享作用域...`);
+        await window[scope].init({});
+        
+        log(`获取模块: ${module}`);
+        const factory = await window[scope].get(module);
+        const Module = factory();
+        const Component = Module.default || Module;
+        
+        log('✅ Button组件加载成功', 'success');
+        
+        // 渲染组件（需要React）
+        const container = document.getElementById('app-container');
+        container.innerHTML = '<div id="button-root"></div>';
+        
+        // 简单的innerHTML测试
+        container.innerHTML = `
+          <div style="padding: 20px; background: #e6f7ff; border-radius: 4px;">
+            <h3>✅ Button组件加载成功</h3>
+            <p>组件名称: ${Component.name || 'Anonymous'}</p>
+            <p>组件类型: ${typeof Component}</p>
+          </div>
+        `;
+        
+      } catch (error) {
+        log(`❌ 测试失败: ${error.message}`, 'error');
+        log(`错误堆栈: ${error.stack}`, 'error');
+      }
+    }
+
+    async function testLoadEmbeddedApp() {
+      log('开始测试加载EmbeddedApp组件...');
+      
+      try {
+        await testLoadRemote();
+        
+        const scope = 'eiaS0App';
+        const module = './EmbeddedApp';
+        
+        if (!window[scope]) {
+          log('❌ 容器未加载，请先执行测试1', 'error');
+          return;
+        }
+        
+        log(`初始化共享作用域...`);
+        await window[scope].init({});
+        
+        log(`获取模块: ${module}`);
+        const factory = await window[scope].get(module);
+        const Module = factory();
+        const Component = Module.default || Module;
+        
+        log('✅ EmbeddedApp组件加载成功', 'success');
+        log(`组件名称: ${Component.name || 'Anonymous'}`);
+        log(`组件类型: ${typeof Component}`);
+        
+        const container = document.getElementById('app-container');
+        container.innerHTML = `
+          <div style="padding: 20px; background: #f6ffed; border-radius: 4px;">
+            <h3>✅ EmbeddedApp组件加载成功</h3>
+            <p>组件名称: ${Component.name || 'Anonymous'}</p>
+            <p>组件类型: ${typeof Component}</p>
+            <p>下一步: 返回主应用测试实际渲染</p>
+          </div>
+        `;
+        
+      } catch (error) {
+        log(`❌ 测试失败: ${error.message}`, 'error');
+        log(`错误堆栈: ${error.stack}`, 'error');
+      }
+    }
+
+    async function testLoadApp() {
+      log('开始测试加载App组件...');
+      
+      try {
+        await testLoadRemote();
+        
+        const scope = 'eiaS0App';
+        const module = './App';
+        
+        if (!window[scope]) {
+          log('❌ 容器未加载，请先执行测试1', 'error');
+          return;
+        }
+        
+        log(`初始化共享作用域...`);
+        await window[scope].init({});
+        
+        log(`获取模块: ${module}`);
+        const factory = await window[scope].get(module);
+        const Module = factory();
+        const Component = Module.default || Module;
+        
+        log('✅ App组件加载成功', 'success');
+        log(`组件名称: ${Component.name || 'Anonymous'}`);
+        
+      } catch (error) {
+        log(`❌ 测试失败: ${error.message}`, 'error');
+      }
+    }
+  </script>
+</body>
+</html>

@@ -1,6 +1,7 @@
 /**
  * Event Type Constants
  * Kafka event type definitions for simulation display
+ * Extended with host-subapp communication events
  * Based on: S0 - Governance BC 消息队列与事件驱动架构规范
  * @module eventTypes
  */
@@ -39,6 +40,45 @@ export const EVENT_TYPES = Object.freeze({
   // Internal events (consumed by S0)
   REFRESH_CACHE: 'governance.refreshcache.v1',
   SYNC_REQUEST: 'governance.syncrequest.v1',
+});
+
+/**
+ * Host-Subapp Communication Event Types
+ * Events for communication between host app and sub-app
+ */
+export const HOST_EVENT_TYPES = Object.freeze({
+  // Theme events
+  THEME_CHANGED: 'host:theme:changed',
+  THEME_REQUEST: 'host:theme:request',
+
+  // Route events
+  ROUTE_SYNC: 'host:route:sync',
+  ROUTE_PUSH: 'host:route:push',
+  ROUTE_REPLACE: 'host:route:replace',
+
+  // Auth events
+  AUTH_LOGIN: 'host:auth:login',
+  AUTH_LOGOUT: 'host:auth:logout',
+  AUTH_TOKEN_REFRESH: 'host:auth:token:refresh',
+
+  // Notification events
+  NOTIFICATION_GLOBAL: 'host:notification:global',
+  NOTIFICATION_ERROR: 'host:notification:error',
+
+  // Config events
+  CONFIG_UPDATE: 'host:config:update',
+  CONFIG_API_BASE_URL_CHANGED: 'host:config:apiBaseUrl:changed',
+
+  // Subapp lifecycle events
+  SUBAPP_MOUNTED: 'subapp:mounted',
+  SUBAPP_UNMOUNTED: 'subapp:unmounted',
+  SUBAPP_READY: 'subapp:ready',
+  SUBAPP_ERROR: 'subapp:error',
+
+  // Subapp to host events
+  SUBAPP_AUTH_LOGIN: 'subapp:auth:login',
+  SUBAPP_AUTH_LOGOUT: 'subapp:auth:logout',
+  SUBAPP_NOTIFICATION_ERROR: 'subapp:notification:error',
 });
 
 /**

@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>清除缓存</title>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+      margin: 0;
+      background-color: #f5f5f5;
+    }
+    .container {
+      background: white;
+      padding: 40px;
+      border-radius: 8px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+      text-align: center;
+      max-width: 500px;
+    }
+    button {
+      padding: 12px 24px;
+      font-size: 16px;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      margin: 8px;
+      transition: all 0.2s;
+    }
+    .primary {
+      background-color: #1890ff;
+      color: white;
+    }
+    .primary:hover {
+      background-color: #096dd9;
+    }
+    .success {
+      background-color: #52c41a;
+      color: white;
+    }
+    .result {
+      margin-top: 20px;
+      padding: 16px;
+      border-radius: 4px;
+      display: none;
+    }
+    .result.show {
+      display: block;
+    }
+    .result.success {
+      background-color: #f6ffed;
+      border: 1px solid #b7eb8f;
+      color: #52c41a;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>🧹 缓存清理工具</h1>
+    <p>点击按钮清除应用缓存和配置缓存</p>
+    
+    <div>
+      <button class="primary" onclick="clearAllCache()">
+        清除所有缓存
+      </button>
+      <button class="primary" onclick="clearConfigCache()">
+        仅清除配置缓存
+      </button>
+      <button class="primary" onclick="clearLocalStorage()">
+        清除LocalStorage
+      </button>
+      <button class="primary" onclick="clearSessionStorage()">
+        清除SessionStorage
+      </button>
+    </div>
+
+    <div id="result" class="result"></div>
+
+    <div style="margin-top: 24px;">
+      <button class="success" onclick="goHome()">
+        返回首页
+      </button>
+    </div>
+  </div>
+
+  <script>
+    function showResult(message, success = true) {
+      const resultDiv = document.getElementById('result');
+      resultDiv.textContent = message;
+      resultDiv.className = 'result show' + (success ? ' success' : '');
+      
+      setTimeout(() => {
+        resultDiv.className = 'result';
+      }, 3000);
+    }
+
+    function clearAllCache() {
+      try {
+        localStorage.clear();
+        sessionStorage.clear();
+        
+        // 清除Service Worker缓存
+        if ('caches' in window) {
+          caches.keys().then(names => {
+            names.forEach(name => caches.delete(name));
+          });
+        }
+        
+        showResult('✅ 所有缓存已清除！');
+        
+        setTimeout(() => {
+          window.location.href = '/';
+        }, 1500);
+      } catch (error) {
+        showResult('❌ 清除失败: ' + error.message, false);
+      }
+    }
+
+    function clearConfigCache() {
+      try {
+        localStorage.removeItem('MICRO_APP_CONFIG_CACHE');
+        localStorage.removeItem('MICRO_APP_CONFIG_VERSION');
+        showResult('✅ 配置缓存已清除！');
+      } catch (error) {
+        showResult('❌ 清除失败: ' + error.message, false);
+      }
+    }
+
+    function clearLocalStorage() {
+      try {
+        localStorage.clear();
+        showResult('✅ LocalStorage已清除！');
+      } catch (error) {
+        showResult('❌ 清除失败: ' + error.message, false);
+      }
+    }
+
+    function clearSessionStorage() {
+      try {
+        sessionStorage.clear();
+        showResult('✅ SessionStorage已清除！');
+      } catch (error) {
+        showResult('❌ 清除失败: ' + error.message, false);
+      }
+    }
+
+    function goHome() {
+      window.location.href = '/';
+    }
+  </script>
+</body>
+</html>

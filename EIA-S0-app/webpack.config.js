@@ -6,21 +6,27 @@ module.exports = {
   mode: 'development',
 
   devServer: {
-    port: 7002, // EIA-S0-app
+    port: 7002,
     hot: true,
     headers: {
-      'Access-Control-Allow-Origin': '*', // 允许跨域
+      'Access-Control-Allow-Origin': '*',
+      'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, PATCH, OPTIONS',
+      'Access-Control-Allow-Headers': 'X-Requested-With, content-type, Authorization',
     },
-    historyApiFallback: true, // React Router support
+    historyApiFallback: {
+      rewrites: [
+        { from: /.*/, to: '/index.html' }
+      ]
+    },
+    allowedHosts: 'all',
   },
 
   output: {
-    publicPath: 'http://localhost:7002/',
+    publicPath: process.env.REACT_APP_PUBLIC_PATH || 'auto',
   },
 
   module: {
     rules: [
-      // CSS Modules support
       {
         test: /\.module\.css$/,
         use: [
@@ -28,7 +34,7 @@ module.exports = {
           {
             loader: 'css-loader',
             options: {
-              esModule: false, // ensure `import styles from './x.module.css'` works as expected
+              esModule: false,
               modules: {
                 localIdentName: '[name]__[local]--[hash:base64:5]',
               },
@@ -36,7 +42,6 @@ module.exports = {
           },
         ],
       },
-
       {
         test: /\.jsx?$/,
         exclude: /node_modules/,
@@ -54,19 +59,59 @@ module.exports = {
     extensions: ['.js', '.jsx'],
   },
 
+  optimization: {
+    splitChunks: {
+      chunks: 'async',
+      cacheGroups: {
+        vendors: {
+          test: /[\\/]node_modules[\\/]/,
+          priority: -10,
+          name: 'vendors',
+          reuseExistingChunk: true,
+        },
+        common: {
+          minChunks: 2,
+          priority: -20,
+          reuseExistingChunk: true,
+          name: 'common',
+        },
+      },
+    },
+  },
+
   plugins: [
     new ModuleFederationPlugin({
-      name: 'remoteApp2',
+      name: 'eiaS0App',
       filename: 'remoteEntry.js',
 
       exposes: {
         './Button': './src/Button',
         './App': './src/App',
+        // FIX: Expose EmbeddedApp directly for host integration
+        './EmbeddedApp': './src/app/EmbeddedApp',
       },
 
       shared: {
-        react: { singleton: true, requiredVersion: '^18.0.0' },
-        'react-dom': { singleton: true, requiredVersion: '^18.0.0' },
+        react: { 
+          singleton: true, 
+          strictVersion: true,
+          requiredVersion: '^19.2.0',
+          eager: false,
+        },
+        'react-dom': { 
+          singleton: true, 
+          strictVersion: true,
+          requiredVersion: '^19.2.0',
+          eager: false,
+        },
+        'react-router-dom': {
+          singleton: true,
+          requiredVersion: '^6.28.0',
+        },
+        'axios': {
+          singleton: true,
+          requiredVersion: '^1.13.2',
+        },
       },
     }),
 

@@ -1,0 +1,62 @@
+.menuBar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 60px;
+  background-color: var(--color-primary, #1890ff);
+  color: var(--color-text-inverse, #ffffff);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0 24px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+  z-index: 1000;
+}
+
+.leftSection {
+  display: flex;
+  align-items: center;
+  gap: 32px;
+  flex: 1;
+  /* FIX: Debug border */
+  outline: 2px dashed rgba(255, 255, 0, 0.3);
+}
+
+.menuList {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  flex: 1;
+  /* FIX: Debug border */
+  outline: 2px dashed rgba(0, 255, 0, 0.3);
+  min-height: 40px;
+}
+
+.rightSection {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  /* FIX: Debug border */
+  outline: 2px dashed rgba(255, 0, 255, 0.3);
+}
+
+/* 响应式设计 */
+@media (max-width: 768px) {
+  .menuBar {
+    padding: 0 12px;
+  }
+
+  .leftSection {
+    gap: 16px;
+  }
+
+  .menuList {
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+
+  .menuList::-webkit-scrollbar {
+    display: none;
+  }
+}

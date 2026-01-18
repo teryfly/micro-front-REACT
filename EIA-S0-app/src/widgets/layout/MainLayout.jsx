@@ -1,11 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import Header from './Header';
 import Sidebar from './Sidebar';
+import { useMode } from '../../app/providers/ModeContext';
 import stylesImport from './Layout.module.css';
 
 /**
  * Main layout component
- * Provides application shell with header, sidebar, and content area.
+ * Provides application shell with optional header, sidebar, and content area.
+ * In embedded mode, Header is hidden to avoid duplication with host app.
  *
  * @param {Object} props
  * @param {React.ReactNode} props.children - Page content
@@ -14,6 +16,7 @@ const MainLayout = ({ children }) => {
   // Defensive fallback: avoid runtime crash if CSS modules loader is misconfigured
   const styles = stylesImport || {};
 
+  const { isEmbedded } = useMode();
   const [sidebarOpen, setSidebarOpen] = useState(true);
 
   // On small screens, start with sidebar closed by default
@@ -46,10 +49,11 @@ const MainLayout = ({ children }) => {
 
   return (
     <div className={styles.layout}>
-      <Header onMenuClick={toggleSidebar} />
+      {/* Conditional Header - only in standalone mode */}
+      {!isEmbedded && <Header onMenuClick={toggleSidebar} />}
 
       <div className={styles.container}>
-        <Sidebar isOpen={sidebarOpen} />
+        <Sidebar isOpen={sidebarOpen} embedded={isEmbedded} />
         <main className={styles.content} role="main">
           {children}
         </main>

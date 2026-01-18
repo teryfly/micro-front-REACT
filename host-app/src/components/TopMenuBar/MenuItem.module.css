@@ -1,0 +1,65 @@
+.menuItem {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 16px;
+  cursor: pointer;
+  border-radius: 4px;
+  transition: all 0.2s;
+  color: var(--color-text-inverse, #ffffff);
+  white-space: nowrap;
+  position: relative;
+  /* FIX: Debug outline */
+  outline: 1px solid rgba(255, 255, 0, 0.5);
+  min-height: 36px;
+}
+
+.menuItem:hover {
+  background-color: rgba(255, 255, 255, 0.1);
+  /* FIX: Visual feedback on hover */
+  outline: 2px solid rgba(255, 255, 0, 0.8);
+  transform: translateY(-1px);
+}
+
+.menuItem.active {
+  background-color: rgba(255, 255, 255, 0.2);
+  font-weight: 600;
+}
+
+.menuItem.active::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background-color: var(--color-accent, #52c41a);
+  border-radius: 2px 2px 0 0;
+}
+
+.icon {
+  font-size: 18px;
+  line-height: 1;
+}
+
+.text {
+  font-size: 14px;
+  /* FIX: Ensure text is visible */
+  user-select: none;
+}
+
+/* FIX: Ensure clickable */
+.menuItem:active {
+  transform: scale(0.98);
+  background-color: rgba(255, 255, 255, 0.3);
+}
+
+@media (max-width: 768px) {
+  .menuItem {
+    padding: 8px 12px;
+  }
+
+  .text {
+    font-size: 13px;
+  }
+}

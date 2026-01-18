@@ -1,14 +1,24 @@
 import React from 'react';
 import { APP_CONFIG } from '../../shared/constants/app.constants';
+import { useMode } from '../../app/providers/ModeContext';
 import styles from './Layout.module.css';
 
 /**
  * Application header component
+ * Only rendered in standalone mode
+ * In embedded mode, host app provides the header/menu bar
  *
  * @param {Object} props
  * @param {Function} props.onMenuClick - Menu toggle handler
  */
 const Header = ({ onMenuClick }) => {
+  const { isEmbedded } = useMode();
+
+  // Don't render in embedded mode
+  if (isEmbedded) {
+    return null;
+  }
+
   return (
     <header className={styles.header}>
       <div className={styles.headerLeft}>

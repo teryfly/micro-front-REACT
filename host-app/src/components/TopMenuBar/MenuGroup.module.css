@@ -1,0 +1,88 @@
+.menuGroup {
+  position: relative;
+}
+
+.groupTrigger {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 16px;
+  cursor: pointer;
+  border-radius: 4px;
+  transition: all 0.2s;
+  color: var(--color-text-inverse, #ffffff);
+  white-space: nowrap;
+}
+
+.groupTrigger:hover {
+  background-color: rgba(255, 255, 255, 0.1);
+}
+
+.icon {
+  font-size: 18px;
+  line-height: 1;
+}
+
+.text {
+  font-size: 14px;
+}
+
+.arrow {
+  font-size: 10px;
+  transition: transform 0.2s;
+  margin-left: 4px;
+}
+
+.arrowUp {
+  transform: rotate(180deg);
+}
+
+.dropdown {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  margin-top: 8px;
+  background-color: var(--color-bg, #ffffff);
+  border-radius: 4px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  min-width: 180px;
+  padding: 8px 0;
+  animation: fadeIn 0.2s;
+  z-index: 1001;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* 下拉菜单中的菜单项样式覆盖 */
+.dropdown :global(.menuItem) {
+  color: var(--color-text, #333333);
+  margin: 0 8px;
+}
+
+.dropdown :global(.menuItem:hover) {
+  background-color: var(--color-bg-hover, #f0f0f0);
+}
+
+.dropdown :global(.menuItem.active) {
+  background-color: var(--color-primary-light, #e6f7ff);
+  color: var(--color-primary, #1890ff);
+}
+
+@media (max-width: 768px) {
+  .groupTrigger {
+    padding: 8px 12px;
+  }
+
+  .dropdown {
+    min-width: 150px;
+  }
+}

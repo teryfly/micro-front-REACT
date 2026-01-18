@@ -1,4 +1,4 @@
-import React, { createContext, useState, useCallback } from 'react';
+import React, { createContext, useState, useCallback, useEffect } from 'react';
 import Notification from '../../shared/ui/Notification';
 
 /**
@@ -9,32 +9,28 @@ export const NotificationContext = createContext(null);
 
 /**
  * Notification Provider - Manages toast notifications
- * Displays notifications in top-right corner with auto-dismiss
- * Limits to 5 visible notifications at once
+ * Supports both local notifications and cross-app notifications (embedded mode)
  * 
  * @param {Object} props
  * @param {React.ReactNode} props.children - Child components
+ * @param {boolean} [props.embedded=false] - Embedded mode flag
+ * @param {Object} [props.eventBus] - Event bus for cross-app notifications
  * 
  * @example
- * <NotificationProvider>
+ * <NotificationProvider embedded={true} eventBus={eventBus}>
  *   <App />
  * </NotificationProvider>
  */
-export const NotificationProvider = ({ children }) => {
+export const NotificationProvider = ({ children, embedded = false, eventBus = null }) => {
   const [notifications, setNotifications] = useState([]);
 
   /**
    * Show notification toast
-   * Automatically dismisses after specified duration
+   * In embedded mode, also sends error notifications to host app
    * 
    * @param {string} message - Notification message text
    * @param {string} [type='info'] - Notification type: 'success' | 'error' | 'warning' | 'info'
    * @param {number} [duration=3000] - Auto-dismiss duration in milliseconds
-   * 
-   * @example
-   * const { showNotification } = useNotification();
-   * showNotification('Operation successful!', 'success');
-   * showNotification('Error occurred', 'error', 5000);
    */
   const showNotification = useCallback((message, type = 'info', duration = 3000) => {
     const id = Date.now();
@@ -43,7 +39,7 @@ export const NotificationProvider = ({ children }) => {
     setNotifications(prev => {
       const newNotifications = [...prev, notification];
       
-      // Limit to 5 notifications - remove oldest if exceeds
+      // Limit to 5 notifications
       if (newNotifications.length > 5) {
         newNotifications.shift();
       }
@@ -55,19 +51,44 @@ export const NotificationProvider = ({ children }) => {
     setTimeout(() => {
       setNotifications(prev => prev.filter(n => n.id !== id));
     }, duration);
-  }, []);
+
+    // Send error notifications to host app (embedded mode)
+    if (embedded && eventBus && type === 'error') {
+      eventBus.emit('subapp:notification:error', {
+        message,
+        source: 'eia-s0-app',
+        timestamp: new Date().toISOString(),
+      });
+    }
+  }, [embedded, eventBus]);
 
   /**
    * Clear all notifications
-   * Removes all active notifications from display
-   * 
-   * @example
-   * const { clearNotifications } = useNotification();
-   * clearNotifications();
    */
   const clearNotifications = useCallback(() => {
     setNotifications([]);
   }, []);
+
+  /**
+   * Listen for global notifications from host app (embedded mode)
+   */
+  useEffect(() => {
+    if (!embedded || !eventBus) return;
+
+    const handleGlobalNotification = (data) => {
+      const { message, type = 'info', duration = 3000 } = data;
+      showNotification(message, type, duration);
+    };
+
+    // Listen for both host and local notification events
+    eventBus.on('host:notification:global', handleGlobalNotification);
+    eventBus.on('local:notification:show', handleGlobalNotification);
+
+    return () => {
+      eventBus.off('host:notification:global', handleGlobalNotification);
+      eventBus.off('local:notification:show', handleGlobalNotification);
+    };
+  }, [embedded, eventBus, showNotification]);
 
   const value = { showNotification, clearNotifications };
 
@@ -75,7 +96,7 @@ export const NotificationProvider = ({ children }) => {
     <NotificationContext.Provider value={value}>
       {children}
       
-      {/* Notification Container - Fixed top-right position */}
+      {/* Notification Container */}
       <div style={{
         position: 'fixed',
         top: 20,
