@@ -88,24 +88,23 @@ function EmbeddedApp(props) {
         onRouteChange={normalizedProps.onRouteChange}
       />
       
-      {/* FIX: Pass received props to DebugPanel */}
+      {/* Restore Debug Panel */}
       <DebugPanel receivedProps={props} />
     </AppProviders>
   );
 }
 
 EmbeddedApp.propTypes = {
-  // ========== Mode Control ==========
   embedded: PropTypes.bool,
-
-  // ========== Theme Configuration ==========
   theme: PropTypes.objectOf(PropTypes.string),
-
-  // ========== Router Configuration ==========
   basePath: PropTypes.string,
   onRouteChange: PropTypes.func,
-
-  // ========== Authentication Configuration ==========
+  eventBus: PropTypes.shape({
+    on: PropTypes.func,
+    emit: PropTypes.func,
+    off: PropTypes.func,
+    once: PropTypes.func,
+  }),
   token: PropTypes.string,
   userInfo: PropTypes.shape({
     id: PropTypes.string,
@@ -115,19 +114,7 @@ EmbeddedApp.propTypes = {
     permissions: PropTypes.arrayOf(PropTypes.string),
     token: PropTypes.string,
   }),
-
-  // ========== API Configuration ==========
   apiBaseUrl: PropTypes.string,
-
-  // ========== Communication Configuration ==========
-  eventBus: PropTypes.shape({
-    on: PropTypes.func,
-    emit: PropTypes.func,
-    off: PropTypes.func,
-    once: PropTypes.func,
-  }),
-
-  // ========== Metadata ==========
   appId: PropTypes.string,
   version: PropTypes.string,
 };

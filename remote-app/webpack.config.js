@@ -6,11 +6,14 @@ module.exports = {
   mode: 'development',
 
   devServer: {
-    port: 7001, // remote-app
+    port: 7001,
     hot: true,
     headers: {
-      'Access-Control-Allow-Origin': '*', // 允许跨域
+      'Access-Control-Allow-Origin': '*',
+      'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, PATCH, OPTIONS',
+      'Access-Control-Allow-Headers': 'X-Requested-With, content-type, Authorization',
     },
+    historyApiFallback: true,
   },
 
   output: {
@@ -37,19 +40,29 @@ module.exports = {
   },
 
   plugins: [
-    // remote-app 暴露模块
     new ModuleFederationPlugin({
-      name: 'remoteApp1', // 远程容器名称
+      name: 'remoteApp1',
       filename: 'remoteEntry.js',
 
       exposes: {
         './Button': './src/Button',
-        './App': './src/App', // 新增：暴露完整首页
+        './App': './src/App',
+        './EmbeddedApp': './src/EmbeddedApp', // NEW: Expose embedded mode component
       },
 
       shared: {
-        react: { singleton: true, requiredVersion: '^18.0.0' },
-        'react-dom': { singleton: true, requiredVersion: '^18.0.0' },
+        react: { 
+          singleton: true, 
+          strictVersion: true,
+          requiredVersion: '^19.2.0',
+          eager: false,
+        },
+        'react-dom': { 
+          singleton: true, 
+          strictVersion: true,
+          requiredVersion: '^19.2.0',
+          eager: false,
+        },
       },
     }),
 

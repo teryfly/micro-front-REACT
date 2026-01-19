@@ -18,7 +18,6 @@ export default function SubAppWrapper({ appConfig, isActive, subRoute }) {
   const navigate = useNavigate();
   const { theme, themeVars } = useTheme();
 
-  // FIX: Log when wrapper mounts
   useEffect(() => {
     console.log('[SubAppWrapper] Mounted:', {
       appId: appConfig.id,
@@ -27,7 +26,7 @@ export default function SubAppWrapper({ appConfig, isActive, subRoute }) {
     });
   }, [appConfig.id, isActive, subRoute]);
 
-  // 注册路由同步监听器
+  // Register route sync listener
   useEffect(() => {
     if (isActive) {
       const listener = (newRoute) => {
@@ -42,7 +41,7 @@ export default function SubAppWrapper({ appConfig, isActive, subRoute }) {
     }
   }, [appConfig.id, isActive]);
 
-  // 监听子应用路由变化消息
+  // Listen for subapp route changes
   useEffect(() => {
     const unsubscribe = PostMessageBridge.listen(
       MessageTypes.ROUTE_CHANGE,
@@ -60,7 +59,7 @@ export default function SubAppWrapper({ appConfig, isActive, subRoute }) {
     return unsubscribe;
   }, [appConfig.id, isActive, navigate]);
 
-  // 应用挂载/卸载通知
+  // App mount/unmount notification
   useEffect(() => {
     if (isActive) {
       EventBus.emit('app:mounted', { appId: appConfig.id });
@@ -76,11 +75,10 @@ export default function SubAppWrapper({ appConfig, isActive, subRoute }) {
     };
   }, [appConfig.id, isActive]);
 
-  // 路由变化回调（子应用调用）
+  // Route change callback
   const handleRouteChange = (routeState) => {
     if (!isActive) return;
 
-    // FIX: Handle both string path and route state object
     let path = routeState;
     let search = '';
     let hash = '';
@@ -91,7 +89,6 @@ export default function SubAppWrapper({ appConfig, isActive, subRoute }) {
       hash = routeState.hash || '';
     }
 
-    // Construct full path
     const fullPath = `${path}${search}${hash}`;
     
     console.log('[SubAppWrapper] Route change from subapp:', {
@@ -102,11 +99,11 @@ export default function SubAppWrapper({ appConfig, isActive, subRoute }) {
     UrlSyncManager.syncFromSubApp(appConfig.id, fullPath, navigate);
   };
 
-  // 注入到子应用的props
+  // Injected props for subapp
   const injectedProps = {
     embedded: true,
     theme: themeVars,
-    basePath: `/app${appConfig.route}`,
+    basePath: `/app${appConfig.config.route}`,
     currentRoute: subRoute,
     onRouteChange: handleRouteChange,
     eventBus: EventBus,
@@ -117,38 +114,27 @@ export default function SubAppWrapper({ appConfig, isActive, subRoute }) {
     version: '1.0.0'
   };
 
-  // FIX: Use ./EmbeddedApp for embedded mode
   const modulePath = './EmbeddedApp';
 
-  console.log('[SubAppWrapper] Rendering with config:', {
-    appId: appConfig.id,
-    modulePath,
-    isActive,
-    injectedProps: {
-      embedded: injectedProps.embedded,
-      hasTheme: !!injectedProps.theme,
-      hasEventBus: !!injectedProps.eventBus,
-    }
-  });
+  // Convert menu config format to old appConfig format
+  const legacyAppConfig = {
+    id: appConfig.id,
+    name: appConfig.config.containerName,
+    displayName: appConfig.label,
+    entryUrl: appConfig.config.entryUrl,
+    route: appConfig.config.route,
+  };
 
   return (
-    <SubAppErrorBoundary appConfig={appConfig}>
-      <Suspense fallback={<SubAppSkeleton appName={appConfig.displayName} />}>
-        <DynamicRemoteLoader appConfig={appConfig} modulePath={modulePath}>
+    <SubAppErrorBoundary appConfig={legacyAppConfig}>
+      <Suspense fallback={<SubAppSkeleton appName={appConfig.label} />}>
+        <DynamicRemoteLoader appConfig={legacyAppConfig} modulePath={modulePath}>
           {(Component, loading, error, retry) => {
-            console.log('[SubAppWrapper] DynamicRemoteLoader render:', {
-              appId: appConfig.id,
-              hasComponent: !!Component,
-              loading,
-              hasError: !!error,
-            });
-
             if (loading) {
-              return <SubAppSkeleton appName={appConfig.displayName} />;
+              return <SubAppSkeleton appName={appConfig.label} />;
             }
 
             if (error) {
-              console.error('[SubAppWrapper] Component load error:', error);
               return (
                 <div style={{ padding: '40px', textAlign: 'center' }}>
                   <h2>应用加载失败</h2>
@@ -159,15 +145,8 @@ export default function SubAppWrapper({ appConfig, isActive, subRoute }) {
             }
 
             if (!Component) {
-              console.error('[SubAppWrapper] Component is null/undefined');
               return <div>组件未找到</div>;
             }
-
-            console.log('[SubAppWrapper] Rendering component with props:', {
-              appId: appConfig.id,
-              componentName: Component.name || 'Anonymous',
-              propsKeys: Object.keys(injectedProps),
-            });
 
             return <Component {...injectedProps} />;
           }}

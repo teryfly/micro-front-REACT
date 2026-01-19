@@ -1,0 +1,34 @@
+.container {
+  width: 100%;
+  height: calc(100vh - 60px);
+  margin-top: 60px;
+  position: relative;
+  overflow: hidden;
+}
+
+.iframe {
+  width: 100%;
+  height: 100%;
+  border: none;
+  display: block;
+}
+
+.error {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  color: var(--color-error, #ff4d4f);
+}
+
+.error h2 {
+  margin: 0 0 12px 0;
+  font-size: 24px;
+}
+
+.error p {
+  margin: 0;
+  font-size: 14px;
+  color: var(--color-text-secondary, #666666);
+}

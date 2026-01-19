@@ -1,65 +1,64 @@
 /**
  * 子应用容器组件
- * 管理多个子应用实例的渲染和显示/隐藏
+ * 从菜单配置动态加载子应用
  */
 
 import React, { useState, useEffect, useMemo } from 'react';
 import { useParams, useLocation } from 'react-router-dom';
-import { useConfig } from '../../config/useConfig';
+import { menuConfigService } from '../../services/menuConfigService';
 import SubAppWrapper from './SubAppWrapper';
 import UrlSyncManager from '../../router/UrlSyncManager';
 import styles from './SubAppContainer.module.css';
 
 export default function SubAppContainer() {
-  // 注意：这里的 appId 实际上是路由参数，可能是 ID 也可能是 route 路径段
   const { appId: routeParam } = useParams();
   const location = useLocation();
-  const { getAppConfig, getAppByRoute } = useConfig();
-  
-  // 已加载的应用实例集合
+  const [menuConfig, setMenuConfig] = useState(null);
   const [loadedApps, setLoadedApps] = useState(new Set());
 
-  // FIX: Log route params
+  // Load menu configuration
   useEffect(() => {
-    console.log('[SubAppContainer] Route params:', {
+    loadMenuConfig();
+  }, []);
+
+  const loadMenuConfig = async () => {
+    try {
+      const data = await menuConfigService.getUserMenuConfig();
+      setMenuConfig(data.menuConfig);
+    } catch (error) {
+      console.error('[SubAppContainer] Failed to load menu config:', error);
+    }
+  };
+
+  // Find current app config from menu
+  const currentAppConfig = useMemo(() => {
+    if (!menuConfig) return null;
+
+    // Find by route match
+    const app = menuConfig.items.find(item => {
+      if (item.type !== 'subapp') return false;
+      const appPrefix = `/app${item.config.route}`;
+      return location.pathname === appPrefix || 
+             location.pathname.startsWith(`${appPrefix}/`);
+    });
+
+    console.log('[SubAppContainer] Resolved app:', {
       routeParam,
       pathname: location.pathname,
+      found: !!app,
+      appId: app?.id,
     });
-  }, [routeParam, location.pathname]);
 
-  // FIX: 解析当前应用配置
-  // 优先尝试通过路由匹配，然后尝试作为ID匹配
-  const currentAppConfig = useMemo(() => {
-    // 尝试1: 通过完整路径匹配
-    // location.pathname 是 /app/governance
-    let config = getAppByRoute(location.pathname);
-    
-    // 尝试2: 如果路径匹配失败，尝试用参数作为ID查找
-    if (!config && routeParam) {
-      config = getAppConfig(routeParam);
-    }
+    return app;
+  }, [menuConfig, location.pathname, routeParam]);
 
-    console.log('[SubAppContainer] Resolved app config:', {
-      routeParam,
-      path: location.pathname,
-      found: !!config,
-      appId: config?.id,
-      appName: config?.displayName
-    });
-    
-    return config;
-  }, [routeParam, location.pathname, getAppConfig, getAppByRoute]);
-
-  // 解析子路由
+  // Parse sub-route
   const subRoute = useMemo(() => {
     if (!currentAppConfig) return '/';
     
-    // 从完整路径中移除应用前缀
-    // 例如 /app/governance/doctype -> /doctype
-    const appPrefix = `/app${currentAppConfig.route}`;
+    const appPrefix = `/app${currentAppConfig.config.route}`;
     let route = location.pathname.replace(appPrefix, '');
     
-    // 确保以 / 开头
     if (!route.startsWith('/')) {
       route = '/' + route;
     }
@@ -67,7 +66,7 @@ export default function SubAppContainer() {
     return route;
   }, [location.pathname, currentAppConfig]);
 
-  // 添加应用到已加载集合
+  // Add app to loaded set
   useEffect(() => {
     if (currentAppConfig) {
       console.log('[SubAppContainer] Adding app to loaded set:', currentAppConfig.id);
@@ -76,25 +75,27 @@ export default function SubAppContainer() {
     }
   }, [currentAppConfig]);
 
+  if (!menuConfig) {
+    return <div className={styles.loading}>加载配置中...</div>;
+  }
+
   if (!currentAppConfig) {
-    console.error('[SubAppContainer] App config not found for route:', routeParam);
     return (
       <div className={styles.error}>
         <h2>应用未找到</h2>
-        <p>无法解析路由: {routeParam}</p>
-        <p>当前路径: {location.pathname}</p>
+        <p>路由: {routeParam}</p>
+        <p>路径: {location.pathname}</p>
       </div>
     );
   }
 
-  // 当前激活的应用ID
   const activeAppId = currentAppConfig.id;
 
   return (
     <div className={styles.container}>
       {Array.from(loadedApps).map(loadedAppId => {
-        const appConfig = getAppConfig(loadedAppId);
-        if (!appConfig) {
+        const appConfig = menuConfig.items.find(item => item.id === loadedAppId);
+        if (!appConfig || appConfig.type !== 'subapp') {
           return null;
         }
 

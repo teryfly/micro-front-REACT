@@ -19,8 +19,6 @@
   align-items: center;
   gap: 32px;
   flex: 1;
-  /* FIX: Debug border */
-  outline: 2px dashed rgba(255, 255, 0, 0.3);
 }
 
 .menuList {
@@ -28,8 +26,6 @@
   align-items: center;
   gap: 4px;
   flex: 1;
-  /* FIX: Debug border */
-  outline: 2px dashed rgba(0, 255, 0, 0.3);
   min-height: 40px;
 }
 
@@ -37,11 +33,37 @@
   display: flex;
   align-items: center;
   gap: 16px;
-  /* FIX: Debug border */
-  outline: 2px dashed rgba(255, 0, 255, 0.3);
 }
 
-/* 响应式设计 */
+/* Menu Config Icon */
+.configIcon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  cursor: pointer;
+  border-radius: 50%;
+  transition: all 0.2s;
+  background-color: rgba(255, 255, 255, 0.1);
+}
+
+.configIcon:hover {
+  background-color: rgba(255, 255, 255, 0.2);
+  transform: scale(1.1);
+}
+
+.configIcon span {
+  font-size: 20px;
+  line-height: 1;
+}
+
+/* Menu Group (for categories with children) */
+.menuGroup {
+  position: relative;
+}
+
+/* Responsive Design */
 @media (max-width: 768px) {
   .menuBar {
     padding: 0 12px;

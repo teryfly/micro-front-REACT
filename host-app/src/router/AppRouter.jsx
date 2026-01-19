@@ -5,9 +5,12 @@
 
 import React, { useEffect } from 'react';
 import { Routes, Route, Navigate, useLocation } from 'react-router-dom';
-import { useConfig } from '../config/useConfig';
+import { menuConfigService } from '../services/menuConfigService';
+import AppRegistry from '../core/AppRegistry';
 import MainLayout from '../layouts/MainLayout';
 import SubAppContainer from '../components/SubAppContainer/SubAppContainer';
+import ExternalLinkContainer from '../components/SubAppContainer/ExternalLinkContainer';
+import MenuConfigPage from '../pages/MenuConfigPage';
 import NotFoundPage from '../components/NotFoundPage';
 import TestPage from '../components/TestPage';
 
@@ -15,10 +18,56 @@ import TestPage from '../components/TestPage';
  * 应用路由组件
  */
 export default function AppRouter() {
-  const { defaultApp, loading, apps } = useConfig();
   const location = useLocation();
+  const [defaultRoute, setDefaultRoute] = React.useState(null);
+  const [loading, setLoading] = React.useState(true);
 
-  // FIX: Log route changes
+  // Load menu config and register apps
+  useEffect(() => {
+    loadMenuConfigAndRegisterApps();
+  }, []);
+
+  const loadMenuConfigAndRegisterApps = async () => {
+    try {
+      const data = await menuConfigService.getUserMenuConfig();
+      const menuConfig = data.menuConfig;
+
+      // Register all subapps to AppRegistry
+      const subapps = menuConfig.items.filter(item => item.type === 'subapp');
+      
+      subapps.forEach(item => {
+        const appConfig = {
+          id: item.config.appId,
+          name: item.config.containerName,
+          displayName: item.label,
+          entryUrl: item.config.entryUrl,
+          route: item.config.route,
+          enabled: true,
+        };
+
+        AppRegistry.registerApp(appConfig);
+        console.log('[AppRouter] Registered app:', appConfig);
+      });
+
+      // Set default route
+      const defaultApp = menuConfig.items.find(
+        item => item.id === menuConfig.defaultAppId
+      );
+      
+      if (defaultApp && defaultApp.type === 'subapp') {
+        setDefaultRoute(`/app${defaultApp.config.route}`);
+      } else {
+        const firstSubApp = subapps[0];
+        setDefaultRoute(firstSubApp ? `/app${firstSubApp.config.route}` : '/menu-config');
+      }
+    } catch (error) {
+      console.error('[AppRouter] Failed to load menu config:', error);
+      setDefaultRoute('/menu-config');
+    } finally {
+      setLoading(false);
+    }
+  };
+
   useEffect(() => {
     console.log('[AppRouter] Location changed:', {
       pathname: location.pathname,
@@ -27,38 +76,40 @@ export default function AppRouter() {
     });
   }, [location.pathname, location.search, location.hash]);
 
-  // FIX: Log router state
-  useEffect(() => {
-    console.log('[AppRouter] Router state:', {
-      loading,
-      hasDefaultApp: !!defaultApp,
-      defaultAppId: defaultApp?.id,
-      defaultAppRoute: defaultApp?.route,
-      totalApps: apps?.length || 0,
-    });
-  }, [loading, defaultApp, apps]);
-
   if (loading) {
-    console.log('[AppRouter] Still loading config...');
-    return <div>加载配置中...</div>;
+    return (
+      <div style={{
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        height: '100vh',
+        fontSize: '16px',
+        color: '#666'
+      }}>
+        加载应用配置中...
+      </div>
+    );
   }
 
-  if (!defaultApp) {
-    console.error('[AppRouter] No default app found!');
-    return <div>未找到可用应用</div>;
-  }
-
-  const defaultPath = `/app${defaultApp.route}`;
-  console.log('[AppRouter] Rendering routes with default path:', defaultPath);
-
-  // FIX: Wrap all routes in MainLayout to ensure TopMenuBar has router context
   return (
     <MainLayout>
       <Routes>
         {/* 根路径重定向到默认应用 */}
         <Route 
           path="/" 
-          element={<Navigate to={defaultPath} replace />} 
+          element={<Navigate to={defaultRoute} replace />} 
+        />
+
+        {/* 菜单配置页面 */}
+        <Route 
+          path="/menu-config" 
+          element={<MenuConfigPage />} 
+        />
+
+        {/* 外部链接iframe容器 */}
+        <Route 
+          path="/external/:encodedUrl" 
+          element={<ExternalLinkContainer />} 
         />
 
         {/* 测试路由 */}

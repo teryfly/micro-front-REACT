@@ -1,82 +1,120 @@
 /**
  * 顶部菜单栏组件
- * 显示Logo、菜单、主题切换和用户信息
+ * 从用户菜单配置动态渲染
  */
 
-import React, { useEffect } from 'react';
-import { useConfig } from '../../config/useConfig';
+import React, { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { menuConfigService } from '../../services/menuConfigService';
 import Logo from './Logo';
-import MenuGroup from './MenuGroup';
-import ThemeSwitcher from './ThemeSwitcher';
+import DynamicMenuItem from './DynamicMenuItem';
 import UserInfo from './UserInfo';
 import styles from './TopMenuBar.module.css';
 
 export default function TopMenuBar() {
-  const { config, appsByGroup, menuGroups } = useConfig();
+  const navigate = useNavigate();
+  const [menuConfig, setMenuConfig] = useState(null);
+  const [loading, setLoading] = useState(true);
 
-  // FIX: Log menu bar state
+  // Load menu configuration on mount
   useEffect(() => {
-    console.log('[TopMenuBar] Rendered with:', {
-      hasConfig: !!config,
-      menuGroupsCount: menuGroups?.length || 0,
-      menuGroups: menuGroups?.map(g => g.name),
-      appsByGroup: Object.keys(appsByGroup || {}),
-      totalApps: Object.values(appsByGroup || {}).flat().length,
-    });
+    loadMenuConfig();
+  }, []);
 
-    if (appsByGroup) {
-      Object.entries(appsByGroup).forEach(([groupName, apps]) => {
-        console.log(`[TopMenuBar] Group "${groupName}":`, apps.map(a => ({
-          id: a.id,
-          displayName: a.displayName,
-          route: a.route,
-        })));
-      });
+  const loadMenuConfig = async () => {
+    try {
+      setLoading(true);
+      const data = await menuConfigService.getUserMenuConfig();
+      setMenuConfig(data.menuConfig);
+      console.log('[TopMenuBar] Menu config loaded:', data);
+    } catch (error) {
+      console.error('[TopMenuBar] Failed to load menu config:', error);
+    } finally {
+      setLoading(false);
     }
-  }, [config, appsByGroup, menuGroups]);
+  };
 
-  if (!config) {
-    console.warn('[TopMenuBar] Config is null, not rendering menu');
-    return null;
+  const handleConfigClick = () => {
+    navigate('/menu-config');
+  };
+
+  // Build tree structure for rendering
+  const menuTree = React.useMemo(() => {
+    if (!menuConfig) return [];
+    return buildMenuTree(menuConfig.items);
+  }, [menuConfig]);
+
+  if (loading) {
+    return (
+      <div className={styles.menuBar}>
+        <div className={styles.leftSection}>
+          <Logo branding={{ logo: '🏠', title: '主应用' }} />
+        </div>
+      </div>
+    );
   }
 
   return (
     <div className={styles.menuBar}>
       <div className={styles.leftSection}>
-        <Logo branding={config.branding} />
+        <Logo branding={{ logo: '🏠', title: '主应用' }} />
         
         <div className={styles.menuList}>
-          {menuGroups.map(group => {
-            const groupApps = appsByGroup[group.name] || [];
-            console.log('[TopMenuBar] Rendering MenuGroup:', {
-              groupId: group.id,
-              groupName: group.name,
-              appsCount: groupApps.length,
-            });
-            
-            return (
-              <MenuGroup
-                key={group.id}
-                group={group}
-                apps={groupApps}
-              />
-            );
-          })}
-          
-          {/* 未分组的应用 */}
-          {appsByGroup['其他'] && appsByGroup['其他'].length > 0 && (
-            <MenuGroup
-              group={{ id: 'other', name: '其他', icon: '📋' }}
-              apps={appsByGroup['其他']}
+          {menuTree.map(node => (
+            <DynamicMenuItem
+              key={node.id}
+              node={node}
+              level={0}
             />
-          )}
+          ))}
         </div>
       </div>
 
       <div className={styles.rightSection}>
-        {config.theme?.allowSwitch && <ThemeSwitcher />}
+        {/* Menu Config Icon (replaces theme switcher) */}
+        <div 
+          className={styles.configIcon}
+          onClick={handleConfigClick}
+          title="菜单配置"
+        >
+          <span>⚙️</span>
+        </div>
+        
         <UserInfo />
       </div>
     </div>
   );
+}
+
+/**
+ * Build tree structure from flat items
+ */
+function buildMenuTree(items) {
+  const map = {};
+  const roots = [];
+
+  items.forEach(item => {
+    map[item.id] = { ...item, children: [] };
+  });
+
+  items.forEach(item => {
+    if (item.parentId && map[item.parentId]) {
+      map[item.parentId].children.push(map[item.id]);
+    } else {
+      roots.push(map[item.id]);
+    }
+  });
+
+  // Sort by order
+  const sortByOrder = (arr) => {
+    arr.sort((a, b) => a.order - b.order);
+    arr.forEach(item => {
+      if (item.children && item.children.length > 0) {
+        sortByOrder(item.children);
+      }
+    });
+  };
+
+  sortByOrder(roots);
+  return roots;
 }
