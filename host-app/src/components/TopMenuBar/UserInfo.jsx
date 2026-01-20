@@ -42,6 +42,9 @@ export default function UserInfo() {
     console.log('[UserInfo] 退出登录');
     window.location.href = '/login';
   };
+  const clearCache =()=>{
+    window.location.href = '/clear-cache.html';
+  }
 
   return (
     <div className={styles.userInfo} ref={dropdownRef}>
@@ -58,13 +61,18 @@ export default function UserInfo() {
           <div className={styles.dropdownItem}>
             <span>👤</span>
             <span>个人中心</span>
+          </div>         
+           <div className={styles.dropdownItem}
+           onClick={clearCache}>
+            <span>🚪</span>
+            <span>清除缓存</span>
           </div>
           <div className={styles.divider}></div>
           <div 
             className={styles.dropdownItem}
             onClick={handleLogout}
           >
-            <span>🚪</span>
+            <span></span>
             <span>退出登录</span>
           </div>
         </div>

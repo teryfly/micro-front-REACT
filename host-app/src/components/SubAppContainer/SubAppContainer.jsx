@@ -8,6 +8,7 @@ import { useParams, useLocation } from 'react-router-dom';
 import { menuConfigService } from '../../services/menuConfigService';
 import SubAppWrapper from './SubAppWrapper';
 import UrlSyncManager from '../../router/UrlSyncManager';
+import AppRegistry from '../../core/AppRegistry'; // Import AppRegistry
 import styles from './SubAppContainer.module.css';
 
 export default function SubAppContainer() {
@@ -66,12 +67,29 @@ export default function SubAppContainer() {
     return route;
   }, [location.pathname, currentAppConfig]);
 
-  // Add app to loaded set
+  // Lazy Registration & Loaded Set Management
   useEffect(() => {
     if (currentAppConfig) {
-      console.log('[SubAppContainer] Adding app to loaded set:', currentAppConfig.id);
-      setLoadedApps(prev => new Set([...prev, currentAppConfig.id]));
-      UrlSyncManager.setCurrentApp(currentAppConfig.id);
+      const appId = currentAppConfig.id;
+      
+      // 关键修复：懒注册 (Lazy Registration)
+      // 如果注册表中不存在该应用（可能是新增后未刷新），则立即注册
+      if (!AppRegistry.getAppConfig(appId)) {
+        console.log(`[SubAppContainer] Lazy registering app: ${appId}`);
+        AppRegistry.registerApp({
+          id: appId, // 使用菜单项ID作为注册键
+          name: currentAppConfig.config.containerName,
+          displayName: currentAppConfig.label,
+          entryUrl: currentAppConfig.config.entryUrl,
+          route: currentAppConfig.config.route,
+          enabled: true,
+          logicalAppId: currentAppConfig.config.appId
+        });
+      }
+
+      console.log('[SubAppContainer] Adding app to loaded set:', appId);
+      setLoadedApps(prev => new Set([...prev, appId]));
+      UrlSyncManager.setCurrentApp(appId);
     }
   }, [currentAppConfig]);
 

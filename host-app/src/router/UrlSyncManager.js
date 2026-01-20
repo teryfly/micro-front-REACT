@@ -32,18 +32,28 @@ class UrlSyncManager {
 
   /**
    * 构建主应用URL
-   * @param {string} appId - 应用ID
+   * @param {string} routePrefix - 应用路由前缀 (例如 "/governance" 或 "governance")
    * @param {string} subRoute - 子路由
    * @returns {string}
    */
-  buildUrl(appId, subRoute) {
+  buildUrl(routePrefix, subRoute) {
+    // 确保 routePrefix 不包含开头的 /app (如果传入了)
+    let cleanPrefix = routePrefix.replace(/^\/app/, '');
+    
+    // 确保以 / 开头
+    if (!cleanPrefix.startsWith('/')) {
+      cleanPrefix = '/' + cleanPrefix;
+    }
+
     const cleanSubRoute = subRoute.startsWith('/') ? subRoute : `/${subRoute}`;
-    return `/app/${appId}${cleanSubRoute}`;
+    
+    // 最终格式: /app/governance/sub/path
+    return `/app${cleanPrefix}${cleanSubRoute}`;
   }
 
   /**
    * 同步URL到子应用
-   * @param {string} appId - 应用ID
+   * @param {string} appId - 应用ID (系统注册ID)
    * @param {string} subRoute - 子路由
    */
   syncToSubApp(appId, subRoute) {
@@ -56,18 +66,25 @@ class UrlSyncManager {
 
   /**
    * 从子应用同步URL到主应用
-   * @param {string} appId - 应用ID
+   * @param {string} appId - 应用ID (系统注册ID，用于状态存储)
+   * @param {string} routePrefix - 应用路由前缀 (用户配置的路由，用于URL构建)
    * @param {string} subRoute - 子路由
    * @param {Function} navigate - React Router navigate函数
    */
-  syncFromSubApp(appId, subRoute, navigate) {
-    const newUrl = this.buildUrl(appId, subRoute);
+  syncFromSubApp(appId, routePrefix, subRoute, navigate) {
+    const newUrl = this.buildUrl(routePrefix, subRoute);
+    
+    // 避免重复跳转
+    if (window.location.pathname === newUrl) {
+      return;
+    }
+
     console.log(`[UrlSync] 子应用路由变化，更新主应用URL: ${newUrl}`);
     
     // 使用replace避免触发重新加载
     navigate(newUrl, { replace: true });
     
-    // 保存路由状态
+    // 保存路由状态 (使用唯一ID作为key)
     SubAppRouteManager.saveRouteState(appId, {
       pathname: subRoute,
       search: '',

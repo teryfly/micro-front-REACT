@@ -10,6 +10,7 @@ import { menuConfigService } from '../services/menuConfigService';
 import MenuTreeEditor from '../components/MenuConfig/MenuTreeEditor';
 import QuickAddSubApp from '../components/MenuConfig/QuickAddSubApp';
 import { useNotification } from '../context/NotificationContext';
+import AppRegistry from '../core/AppRegistry';
 import styles from './MenuConfigPage.module.css';
 
 export default function MenuConfigPage() {
@@ -56,13 +57,29 @@ export default function MenuConfigPage() {
         return;
       }
 
+      // 1. 立即注册所有子应用，确保无需刷新即可访问
+      const subapps = menuConfig.items.filter(item => item.type === 'subapp');
+      subapps.forEach(item => {
+        AppRegistry.registerApp({
+          id: item.id, 
+          name: item.config.containerName,
+          displayName: item.label,
+          entryUrl: item.config.entryUrl,
+          route: item.config.route,
+          enabled: true,
+          logicalAppId: item.config.appId
+        });
+      });
+      console.log('[MenuConfigPage] Auto-registered apps:', subapps.length);
+
+      // 2. 保存配置到持久化存储
       const result = await menuConfigService.updateUserMenuConfig(menuConfig);
       
       if (result.success) {
         addToast('菜单配置保存成功', 'success');
         setIsDefault(false);
         
-        // Reload page to apply new menu
+        // Reload page to apply new menu fully (ensure router state is clean)
         setTimeout(() => {
           window.location.href = '/';
         }, 1000);
@@ -194,90 +211,41 @@ export default function MenuConfigPage() {
             </div>
             <div className={styles.helpBody}>
               <section>
+                <h3>ℹ️ 关于 "应用未注册" 错误</h3>
+                <p>系统使用内部生成的唯一ID（如 <code>menu-item-xxxxx</code>）来注册应用，这是为了支持同一应用在菜单中出现多次。</p>
+                <p>如果您看到此错误，通常是因为配置尚未生效。<strong>请尝试点击"保存配置"并等待页面自动刷新。</strong></p>
+              </section>
+
+              <section>
+                <h3>📦 添加子应用 - 关键配置</h3>
+                <p>手动配置时，请确保以下字段准确无误：</p>
+                <ul>
+                  <li>
+                    <strong>容器名 (Container Name)</strong>: 
+                    <span style={{color: 'red'}}> 必须完全匹配</span> 子应用 <code>webpack.config.js</code> 中的 <code>name</code> 字段。
+                    <br/>
+                    <small>例如：如果子应用配置是 <code>name: 'eiaS0App'</code>，这里必须填 <code>eiaS0App</code>。</small>
+                  </li>
+                  <li>
+                    <strong>入口URL (Entry URL)</strong>: 
+                    指向子应用 <code>remoteEntry.js</code> 的完整地址。
+                    <br/>
+                    <small>例如：<code>http://localhost:7002/remoteEntry.js</code></small>
+                  </li>
+                  <li>
+                    <strong>应用ID (App ID)</strong>: 
+                    您的自定义逻辑标识符，用于路由前缀等，可以自由填写。
+                  </li>
+                </ul>
+              </section>
+
+              <section>
                 <h3>🚀 快速开始</h3>
                 <ol>
                   <li>点击"添加菜单项"按钮添加新的菜单</li>
                   <li>拖拽菜单项可以调整顺序</li>
                   <li>点击"保存配置"使配置生效</li>
                 </ol>
-              </section>
-
-              <section>
-                <h3>📦 添加子应用</h3>
-                <p><strong>方式一：快速添加（推荐）</strong></p>
-                <ol>
-                  <li>点击"添加菜单项"按钮</li>
-                  <li>选择"子应用"类型</li>
-                  <li>点击快速填充示例（如"Governance BC (7002)"）</li>
-                  <li>根据需要修改配置</li>
-                  <li>点击"添加"完成</li>
-                </ol>
-
-                <p><strong>方式二：手动配置</strong></p>
-                <p>需要填写以下信息：</p>
-                <ul>
-                  <li><strong>应用名称</strong>：显示在菜单上的名称</li>
-                  <li><strong>应用ID</strong>：唯一标识符（如：my-app）</li>
-                  <li><strong>路由</strong>：访问路径（如：/myapp）</li>
-                  <li><strong>入口URL</strong>：remoteEntry.js地址（如：http://localhost:7003/remoteEntry.js）</li>
-                  <li><strong>容器名</strong>：webpack配置中的name字段（如：myApp）</li>
-                </ul>
-
-                <div className={styles.helpExample}>
-                  <strong>💡 配置示例：</strong>
-                  <pre>{`{
-  "应用名称": "我的应用",
-  "应用ID": "my-app",
-  "路由": "/myapp",
-  "入口URL": "http://localhost:7003/remoteEntry.js",
-  "容器名": "myApp"
-}`}</pre>
-                </div>
-
-                <div className={styles.helpWarning}>
-                  <strong>⚠️ 重要提示：</strong>
-                  <ul>
-                    <li>容器名必须与子应用webpack.config.js中的<code>name</code>字段完全一致</li>
-                    <li>入口URL必须指向正在运行的子应用的remoteEntry.js文件</li>
-                    <li>路由必须唯一，不能与其他子应用重复</li>
-                    <li>保存后需刷新页面才能生效</li>
-                  </ul>
-                </div>
-              </section>
-
-              <section>
-                <h3>🌐 添加外部链接</h3>
-                <ol>
-                  <li>点击"添加菜单项"按钮</li>
-                  <li>选择"外部链接"类型</li>
-                  <li>输入URL（必须以http://或https://开头）</li>
-                  <li>选择打开方式：
-                    <ul>
-                      <li><strong>新窗口打开</strong>：在新标签页打开</li>
-                      <li><strong>嵌入iframe</strong>：在应用内嵌入显示</li>
-                    </ul>
-                  </li>
-                </ol>
-              </section>
-
-              <section>
-                <h3>📁 添加分类</h3>
-                <ol>
-                  <li>点击"添加菜单项"按钮</li>
-                  <li>选择"分类"类型</li>
-                  <li>输入分类名称</li>
-                  <li>保存后可以在分类下添加子菜单项</li>
-                </ol>
-              </section>
-
-              <section>
-                <h3>⭐ 设置默认应用</h3>
-                <ol>
-                  <li>找到要设为默认的子应用</li>
-                  <li>点击"设为默认"按钮</li>
-                  <li>该应用将在打开主应用时自动加载</li>
-                </ol>
-                <p><em>注意：只有子应用类型可以设为默认</em></p>
               </section>
 
               <section>

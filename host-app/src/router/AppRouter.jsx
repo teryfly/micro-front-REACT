@@ -37,12 +37,16 @@ export default function AppRouter() {
       
       subapps.forEach(item => {
         const appConfig = {
-          id: item.config.appId,
+          // 关键修改：使用菜单项的唯一ID作为注册ID，而不是配置中的逻辑appId
+          // 这确保了 SubAppWrapper 使用 item.id 查找时能找到对应的注册信息
+          id: item.id, 
           name: item.config.containerName,
           displayName: item.label,
           entryUrl: item.config.entryUrl,
           route: item.config.route,
           enabled: true,
+          // 保留原始配置中的逻辑ID供参考
+          logicalAppId: item.config.appId
         };
 
         AppRegistry.registerApp(appConfig);

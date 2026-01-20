@@ -21,10 +21,11 @@ export default function SubAppWrapper({ appConfig, isActive, subRoute }) {
   useEffect(() => {
     console.log('[SubAppWrapper] Mounted:', {
       appId: appConfig.id,
+      route: appConfig.config.route,
       isActive,
       subRoute,
     });
-  }, [appConfig.id, isActive, subRoute]);
+  }, [appConfig.id, appConfig.config.route, isActive, subRoute]);
 
   // Register route sync listener
   useEffect(() => {
@@ -47,8 +48,10 @@ export default function SubAppWrapper({ appConfig, isActive, subRoute }) {
       MessageTypes.ROUTE_CHANGE,
       (message) => {
         if (message.source === appConfig.id && isActive) {
+          // 修复：传入用户配置的路由(config.route)用于构建URL，而不是内部ID
           UrlSyncManager.syncFromSubApp(
             appConfig.id,
+            appConfig.config.route, 
             message.payload.path,
             navigate
           );
@@ -57,7 +60,7 @@ export default function SubAppWrapper({ appConfig, isActive, subRoute }) {
     );
 
     return unsubscribe;
-  }, [appConfig.id, isActive, navigate]);
+  }, [appConfig.id, appConfig.config.route, isActive, navigate]);
 
   // App mount/unmount notification
   useEffect(() => {
@@ -75,7 +78,7 @@ export default function SubAppWrapper({ appConfig, isActive, subRoute }) {
     };
   }, [appConfig.id, isActive]);
 
-  // Route change callback
+  // Route change callback (passed as prop to subapp)
   const handleRouteChange = (routeState) => {
     if (!isActive) return;
 
@@ -93,10 +96,17 @@ export default function SubAppWrapper({ appConfig, isActive, subRoute }) {
     
     console.log('[SubAppWrapper] Route change from subapp:', {
       received: routeState,
-      extractedPath: fullPath
+      extractedPath: fullPath,
+      targetPrefix: appConfig.config.route
     });
 
-    UrlSyncManager.syncFromSubApp(appConfig.id, fullPath, navigate);
+    // 修复：传入用户配置的路由(config.route)用于构建URL
+    UrlSyncManager.syncFromSubApp(
+      appConfig.id, 
+      appConfig.config.route, 
+      fullPath, 
+      navigate
+    );
   };
 
   // Injected props for subapp
@@ -110,7 +120,10 @@ export default function SubAppWrapper({ appConfig, isActive, subRoute }) {
     postMessage: (type, payload) => {
       PostMessageBridge.sendToSubApp(appConfig.id, type, payload);
     },
-    appId: appConfig.id,
+    // 传递业务ID给子应用，而不是系统ID
+    appId: appConfig.config.appId, 
+    // 同时传递系统ID，以备不时之需
+    instanceId: appConfig.id,
     version: '1.0.0'
   };
 
