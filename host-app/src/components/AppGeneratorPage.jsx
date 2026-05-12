@@ -139,10 +139,9 @@ function AppGeneratorPage({ onMenuChange }) {
       URL.revokeObjectURL(url);
 
       // Auto-register to host menu
-      const alreadyRegistered = menuConfigService.isRegistered(values.appId);
+      const alreadyRegistered = await menuConfigService.isRegistered(values.appId);
       if (!alreadyRegistered) {
-        menuConfigService.addMenu({
-          type: 'subapp',
+        await menuConfigService.addSubApp({
           label: values.appName,
           icon: '📦',
           config: {

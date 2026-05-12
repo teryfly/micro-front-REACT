@@ -11,6 +11,7 @@ import MainLayout from '../layouts/MainLayout';
 import SubAppContainer from '../components/SubAppContainer/SubAppContainer';
 import ExternalLinkContainer from '../components/SubAppContainer/ExternalLinkContainer';
 import MenuConfigPage from '../pages/MenuConfigPage';
+import AppGeneratorPage from '../components/AppGeneratorPage';
 import NotFoundPage from '../components/NotFoundPage';
 import TestPage from '../components/TestPage';
 
@@ -105,9 +106,15 @@ export default function AppRouter() {
         />
 
         {/* 菜单配置页面 */}
-        <Route 
-          path="/menu-config" 
-          element={<MenuConfigPage />} 
+        <Route
+          path="/menu-config"
+          element={<MenuConfigPage />}
+        />
+
+        {/* 子应用生成器 */}
+        <Route
+          path="/app-generator"
+          element={<AppGeneratorPage onMenuChange={loadMenuConfigAndRegisterApps} />}
         />
 
         {/* 外部链接iframe容器 */}

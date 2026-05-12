@@ -339,4 +339,48 @@ export const menuConfigService = {
   validateConfig(menuConfig) {
     return validateMenuConfig(menuConfig);
   },
+
+  /**
+   * Check whether an appId is already registered in the user's menu.
+   * Matches against item.config.appId (logical ID) and item.id.
+   * @param {string} appId
+   * @returns {Promise<boolean>}
+   */
+  async isRegistered(appId) {
+    const { menuConfig } = await this.getUserMenuConfig();
+    return menuConfig.items.some(
+      (item) => item.id === appId || item.config?.appId === appId
+    );
+  },
+
+  /**
+   * Append a new sub-app entry to the user's menu config.
+   * @param {{ label: string, icon?: string, config: Object }} subApp
+   * @returns {Promise<Object>} result from updateUserMenuConfig
+   */
+  async addSubApp({ label, icon, config }) {
+    const { menuConfig } = await this.getUserMenuConfig();
+    const newItem = {
+      id: `subapp-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
+      type: 'subapp',
+      label,
+      icon: icon || '📦',
+      order: menuConfig.items.length,
+      parentId: null,
+      config,
+    };
+    menuConfig.items.push(newItem);
+    return this.updateUserMenuConfig(menuConfig);
+  },
+
+  /**
+   * Remove a menu item by its id.
+   * @param {string} itemId
+   * @returns {Promise<Object>} result from updateUserMenuConfig
+   */
+  async removeSubApp(itemId) {
+    const { menuConfig } = await this.getUserMenuConfig();
+    menuConfig.items = menuConfig.items.filter((item) => item.id !== itemId);
+    return this.updateUserMenuConfig(menuConfig);
+  },
 };

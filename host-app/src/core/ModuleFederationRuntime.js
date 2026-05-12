@@ -129,12 +129,21 @@ export async function getRemoteModule(container, module) {
 
 /**
  * 完整的远程模块加载流程
- * @param {string} remoteUrl - remoteEntry.js的URL
- * @param {string} scope - 远程容器名称
- * @param {string} module - 模块路径
+ *
+ * 支持两种调用方式:
+ *   loadRemoteModule(url, scope, module)              — 位置参数 (向后兼容)
+ *   loadRemoteModule({ entryUrl, containerName, modulePath })  — 对象参数 (推荐)
+ *
  * @returns {Promise<any>} 模块导出
  */
-export async function loadRemoteModule(remoteUrl, scope, module) {
+export async function loadRemoteModule(remoteUrlOrOpts, scope, module) {
+  // Normalise: support object-param style for cleaner call sites
+  if (remoteUrlOrOpts && typeof remoteUrlOrOpts === 'object') {
+    const { entryUrl, containerName, modulePath } = remoteUrlOrOpts;
+    return loadRemoteModule(entryUrl, containerName, modulePath);
+  }
+
+  const remoteUrl = remoteUrlOrOpts;
   try {
     console.log(`[MF Runtime] 开始加载远程模块: ${scope}/${module} from ${remoteUrl}`);
     

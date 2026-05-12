@@ -202,6 +202,34 @@ class AppRegistry {
     this.registry.delete(appId);
     console.log(`[AppRegistry] 应用已注销: ${appId}`);
   }
+
+  /**
+   * Alias for clearAppCache — compatible with simple Map-based callers.
+   * Pass no argument to clear all.
+   */
+  invalidate(appId) {
+    if (appId) {
+      this.clearAppCache(appId);
+    } else {
+      // Clear everything
+      this.componentCache.clear();
+      this.loadingStatus.clear();
+      for (const entry of this.registry.values()) {
+        entry.component = null;
+        entry.status = 'registered';
+      }
+    }
+  }
+
+  /** Check if an appId is registered (any state) */
+  has(appId) {
+    return this.registry.has(appId);
+  }
+
+  /** Get cached component directly (sync) */
+  get(appId, modulePath = './EmbeddedApp') {
+    return this.componentCache.get(`${appId}:${modulePath}`) || null;
+  }
 }
 
 // 导出单例

@@ -71,15 +71,24 @@ export default function TopMenuBar() {
       </div>
 
       <div className={styles.rightSection}>
-        {/* Menu Config Icon (replaces theme switcher) */}
-        <div 
+        {/* App Generator shortcut */}
+        <div
+          className={styles.configIcon}
+          onClick={() => navigate('/app-generator')}
+          title="创建子应用"
+        >
+          <span>✨</span>
+        </div>
+
+        {/* Menu Config Icon */}
+        <div
           className={styles.configIcon}
           onClick={handleConfigClick}
           title="菜单配置"
         >
           <span>⚙️</span>
         </div>
-        
+
         <UserInfo />
       </div>
     </div>

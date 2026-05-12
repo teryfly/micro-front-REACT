@@ -1,6 +1,7 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import AppLayout from './components/AppLayout';
 import DemoFeaturePage from './components/DemoFeaturePage';
+import { getEventBus } from './services/eventBus';
 
 /**
  * 主集成入口 — host-app 通过 ./EmbeddedApp 加载此组件。
@@ -27,6 +28,11 @@ function EmbeddedApp({
 }) {
   const [currentPage, setCurrentPage] = useState('home');
   const primaryColor = theme?.primaryColor || '#1890ff';
+  const bus = getEventBus(eventBus);
+
+  useEffect(() => {
+    bus.emit('subapp:ready', { appId, appName, embedded });
+  }, []);
 
   return (
     <AppLayout

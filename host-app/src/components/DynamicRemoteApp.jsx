@@ -1,17 +1,22 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { loadRemoteModule } from '../services/ModuleFederationRuntime';
-import { AppRegistry } from '../services/AppRegistry';
-
 /**
- * Renders a remote sub-app loaded at runtime via Module Federation.
+ * DynamicRemoteApp — lightweight opinionated wrapper over DynamicRemoteLoader.
+ *
+ * Use this component when you need to render a remote module directly without
+ * the full SubAppWrapper context (e.g., a quick preview, a test page).
+ * For production sub-app rendering use SubAppWrapper which provides theme,
+ * eventBus, URL sync, and error boundary.
  *
  * Props:
- *   appId         {string}  unique identifier (used as registry key)
+ *   appId         {string}  unique id — used as AppRegistry key
  *   entryUrl      {string}  URL of remoteEntry.js
  *   containerName {string}  webpack container name
  *   modulePath    {string}  exposed path, default './EmbeddedApp'
  *   appProps      {object}  extra props forwarded to the remote component
  */
+import React from 'react';
+import AppRegistry from '../core/AppRegistry';
+import { DynamicRemoteLoader } from '../core/DynamicRemoteLoader';
+
 function DynamicRemoteApp({
   appId,
   entryUrl,
@@ -19,79 +24,54 @@ function DynamicRemoteApp({
   modulePath = './EmbeddedApp',
   appProps = {},
 }) {
-  const [Component, setComponent] = useState(() => AppRegistry.get(appId) || null);
-  const [error, setError] = useState(null);
-  const [loading, setLoading] = useState(!AppRegistry.has(appId));
-  const mountedRef = useRef(true);
-
-  useEffect(() => {
-    mountedRef.current = true;
-    return () => {
-      mountedRef.current = false;
-    };
-  }, []);
-
-  useEffect(() => {
-    if (AppRegistry.has(appId)) {
-      setComponent(() => AppRegistry.get(appId));
-      setLoading(false);
-      return;
-    }
-
-    setLoading(true);
-    setError(null);
-
-    loadRemoteModule({ entryUrl, containerName, modulePath })
-      .then((mod) => {
-        if (!mountedRef.current) return;
-        const Comp = mod.default || mod;
-        AppRegistry.register(appId, Comp);
-        setComponent(() => Comp);
-        setLoading(false);
-      })
-      .catch((err) => {
-        if (!mountedRef.current) return;
-        setError(err.message);
-        setLoading(false);
-      });
-  }, [appId, entryUrl, containerName, modulePath]);
-
-  if (loading) {
-    return (
-      <div style={styles.center}>
-        <div style={styles.spinner} />
-        <p style={{ color: '#666', marginTop: 12 }}>正在加载 {appId}…</p>
-      </div>
-    );
+  // Ensure the app is registered before DynamicRemoteLoader tries to load it
+  if (!AppRegistry.has(appId)) {
+    AppRegistry.registerApp({
+      id: appId,
+      name: containerName,
+      displayName: appId,
+      entryUrl,
+    });
   }
 
-  if (error) {
-    return (
-      <div style={styles.error}>
-        <div style={{ fontSize: 40, marginBottom: 12 }}>⚠️</div>
-        <h3 style={{ margin: '0 0 8px' }}>子应用加载失败</h3>
-        <p style={{ color: '#666', margin: '0 0 16px', fontSize: 13 }}>{error}</p>
-        <p style={{ color: '#999', fontSize: 12 }}>
-          请确认子应用已启动：<code>{entryUrl}</code>
-        </p>
-        <button
-          style={styles.retryBtn}
-          onClick={() => {
-            AppRegistry.invalidate(appId);
-            setComponent(null);
-            setLoading(true);
-            setError(null);
-          }}
-        >
-          重试
-        </button>
-      </div>
-    );
-  }
+  const appConfig = { id: appId, name: containerName, entryUrl };
 
-  if (!Component) return null;
+  return (
+    <DynamicRemoteLoader appConfig={appConfig} modulePath={modulePath}>
+      {(Component, loading, error, retry) => {
+        if (loading) {
+          return (
+            <div style={styles.center}>
+              <div style={styles.spinner} />
+              <p style={{ color: '#666', marginTop: 12 }}>正在加载 {appId}…</p>
+            </div>
+          );
+        }
 
-  return <Component {...appProps} />;
+        if (error) {
+          return (
+            <div style={styles.error}>
+              <div style={{ fontSize: 40, marginBottom: 12 }}>⚠️</div>
+              <h3 style={{ margin: '0 0 8px' }}>子应用加载失败</h3>
+              <p style={{ color: '#666', margin: '0 0 8px', fontSize: 13 }}>
+                {error.message}
+              </p>
+              <p style={{ color: '#999', fontSize: 12, margin: '0 0 16px' }}>
+                请确认子应用已启动：<code>{entryUrl}</code>
+              </p>
+              <button style={styles.retryBtn} onClick={retry}>
+                重试
+              </button>
+            </div>
+          );
+        }
+
+        if (!Component) return null;
+
+        return <Component {...appProps} />;
+      }}
+    </DynamicRemoteLoader>
+  );
 }
 
 const styles = {
@@ -101,7 +81,6 @@ const styles = {
     alignItems: 'center',
     justifyContent: 'center',
     minHeight: 300,
-    color: '#666',
   },
   spinner: {
     width: 40,
@@ -121,7 +100,6 @@ const styles = {
     padding: 32,
   },
   retryBtn: {
-    marginTop: 16,
     padding: '8px 20px',
     background: '#1890ff',
     color: '#fff',
@@ -133,10 +111,11 @@ const styles = {
 };
 
 // Inject spinner keyframes once
-if (typeof document !== 'undefined') {
-  const styleEl = document.createElement('style');
-  styleEl.textContent = '@keyframes mfe-spin { to { transform: rotate(360deg); } }';
-  document.head.appendChild(styleEl);
+if (typeof document !== 'undefined' && !document.getElementById('mfe-spinner-style')) {
+  const s = document.createElement('style');
+  s.id = 'mfe-spinner-style';
+  s.textContent = '@keyframes mfe-spin { to { transform: rotate(360deg); } }';
+  document.head.appendChild(s);
 }
 
 export default DynamicRemoteApp;
