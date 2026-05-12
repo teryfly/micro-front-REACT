@@ -2,25 +2,27 @@ import React, { Suspense } from 'react';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import { routes } from './routeConfig';
 import MainLayout from '../../widgets/layout/MainLayout';
+import EmbeddedLayout from '../../widgets/layout/EmbeddedLayout';
 import Loading from '../../shared/ui/Loading';
+import { useMode } from '../providers/ModeContext';
 
 /**
  * Application router component
- * Configures React Router with lazy-loaded routes and layout
- * 
- * Features:
- * - BrowserRouter for HTML5 history API
- * - Suspense for lazy-loaded component transitions
- * - MainLayout wrapper for all routes
- * - Loading fallback during code splitting
- * 
- * @example
- * <AppRouter />
+ *
+ * - Standalone mode: full MainLayout (Header + Sidebar) + BrowserRouter at '/'
+ * - Embedded mode:   EmbeddedLayout (Sidebar only) + BrowserRouter with basename
+ *   so internal navigation stays within the host's /app/:appId/* wildcard route.
+ *
+ * @param {string}   [basePath='']    Route prefix injected by host app (e.g. '/app/eia-s0-app')
+ * @param {function} [onRouteChange]  Host-app route-sync callback
  */
-const AppRouter = () => {
+const AppRouter = ({ basePath = '', onRouteChange }) => {
+  const { isEmbedded } = useMode();
+  const Layout = isEmbedded ? EmbeddedLayout : MainLayout;
+
   return (
-    <BrowserRouter>
-      <MainLayout>
+    <BrowserRouter basename={isEmbedded ? (basePath || '/') : '/'}>
+      <Layout>
         <Suspense fallback={<Loading message="Loading page..." />}>
           <Routes>
             {routes.map(({ path, element: Element }) => (
@@ -28,7 +30,7 @@ const AppRouter = () => {
             ))}
           </Routes>
         </Suspense>
-      </MainLayout>
+      </Layout>
     </BrowserRouter>
   );
 };

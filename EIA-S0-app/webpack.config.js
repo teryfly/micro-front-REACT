@@ -85,9 +85,10 @@ module.exports = {
     }),
 
     new ModuleFederationPlugin({
-      name: 'remoteApp2',
+      name: 'eiaS0App',
       filename: 'remoteEntry.js',
       exposes: {
+        './EmbeddedApp': './src/app/EmbeddedApp',
         './Button': './src/Button',
         './App': './src/app/App',
       },
