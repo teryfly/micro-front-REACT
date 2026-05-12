@@ -1,56 +1,51 @@
+import React, { useState } from 'react';
+import AppLayout from './components/AppLayout';
+import DemoFeaturePage from './components/DemoFeaturePage';
+
 /**
- * Embedded Application Component for remote-app
- * Simplified application for embedding in host app (no Header)
+ * 主集成入口 — host-app 通过 ./EmbeddedApp 加载此组件。
+ *
+ * Props (所有字段均为可选，host-app 按需传入):
+ *   embedded    {boolean}  true = 嵌入模式（隐藏独立标题等）
+ *   theme       {object}   { primaryColor: '#1890ff' }
+ *   basePath    {string}   路由前缀，默认 '/'
+ *   eventBus    {object}   跨应用事件总线 { on, off, emit }
+ *   token       {string}   JWT / 身份令牌
+ *   userInfo    {object}   { name, username, roles, ... }
+ *   appId       {string}   唯一应用标识
+ *   appName     {string}   显示名称
  */
-
-import React, { useEffect } from 'react';
-import App from './App';
-
-export default function EmbeddedApp(props) {
-  useEffect(() => {
-    console.log('[remote-app EmbeddedApp] Mounted with props:', {
-      embedded: props.embedded,
-      hasEventBus: !!props.eventBus,
-      basePath: props.basePath,
-    });
-  }, []);
-
-  const {
-    embedded = true,
-    theme,
-    basePath = '',
-    onRouteChange,
-    eventBus,
-    appId = 'remote-app-1',
-  } = props;
-
-  // Apply theme if provided
-  useEffect(() => {
-    if (theme && typeof theme === 'object') {
-      Object.entries(theme).forEach(([key, value]) => {
-        document.documentElement.style.setProperty(key, value);
-      });
-    }
-  }, [theme]);
-
-  // Send ready event
-  useEffect(() => {
-    if (embedded && eventBus) {
-      eventBus.emit('subapp:ready', {
-        appId,
-        version: '1.0.0',
-        timestamp: new Date().toISOString(),
-      });
-    }
-  }, [embedded, eventBus, appId]);
+function EmbeddedApp({
+  embedded = false,
+  theme = {},
+  basePath = '/',
+  eventBus = null,
+  token = null,
+  userInfo = null,
+  appId = 'remote-app',
+  appName = 'Remote App 模板',
+}) {
+  const [currentPage, setCurrentPage] = useState('home');
+  const primaryColor = theme?.primaryColor || '#1890ff';
 
   return (
-    <div style={{ 
-      padding: '20px',
-      backgroundColor: 'var(--color-bg, #ffffff)',
-      minHeight: '100%',
-    }}>
-      <App embedded={embedded} />
-    </div>
+    <AppLayout
+      embedded={embedded}
+      primaryColor={primaryColor}
+      appName={appName}
+      currentPage={currentPage}
+      onNavigate={setCurrentPage}
+      userInfo={userInfo}
+    >
+      <DemoFeaturePage
+        pageName={currentPage}
+        primaryColor={primaryColor}
+        token={token}
+        userInfo={userInfo}
+        eventBus={eventBus}
+      />
+    </AppLayout>
   );
 }
+
+export default EmbeddedApp;
