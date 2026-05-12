@@ -1,0 +1,84 @@
+.menuBar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 60px;
+  background-color: var(--color-primary, #1890ff);
+  color: var(--color-text-inverse, #ffffff);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0 24px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+  z-index: 1000;
+}
+
+.leftSection {
+  display: flex;
+  align-items: center;
+  gap: 32px;
+  flex: 1;
+}
+
+.menuList {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  flex: 1;
+  min-height: 40px;
+}
+
+.rightSection {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+/* Menu Config Icon */
+.configIcon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  cursor: pointer;
+  border-radius: 50%;
+  transition: all 0.2s;
+  background-color: rgba(255, 255, 255, 0.1);
+}
+
+.configIcon:hover {
+  background-color: rgba(255, 255, 255, 0.2);
+  transform: scale(1.1);
+}
+
+.configIcon span {
+  font-size: 20px;
+  line-height: 1;
+}
+
+/* Menu Group (for categories with children) */
+.menuGroup {
+  position: relative;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .menuBar {
+    padding: 0 12px;
+  }
+
+  .leftSection {
+    gap: 16px;
+  }
+
+  .menuList {
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+
+  .menuList::-webkit-scrollbar {
+    display: none;
+  }
+}

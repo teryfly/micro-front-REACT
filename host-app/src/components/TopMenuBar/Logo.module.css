@@ -1,0 +1,29 @@
+.logo {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  user-select: none;
+  transition: opacity 0.2s;
+}
+
+.logo:hover {
+  opacity: 0.8;
+}
+
+.logoIcon {
+  font-size: 28px;
+  line-height: 1;
+}
+
+.logoTitle {
+  font-size: 18px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+@media (max-width: 768px) {
+  .logoTitle {
+    display: none;
+  }
+}

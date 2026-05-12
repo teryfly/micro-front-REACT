@@ -10,10 +10,18 @@ module.exports = {
     port: 7000,
     hot: true,
     open: true,
+    historyApiFallback: true,
+    static: {
+      directory: path.join(__dirname, 'public'),
+      watch: {
+        ignored: /node_modules/,
+      }
+    }
   },
 
   output: {
     publicPath: 'http://localhost:7000/',
+    clean: true
   },
 
   module: {
@@ -28,6 +36,21 @@ module.exports = {
           },
         },
       },
+      {
+        test: /\.css$/,
+        use: [
+          'style-loader',
+          {
+            loader: 'css-loader',
+            options: {
+              modules: {
+                auto: true,
+                localIdentName: '[name]__[local]--[hash:base64:5]'
+              }
+            }
+          }
+        ]
+      }
     ],
   },
 
@@ -39,16 +62,22 @@ module.exports = {
     new ModuleFederationPlugin({
       name: 'host',
 
-      remotes: {
-        // 对应 remote-app (7001)
-        remoteApp1: 'remoteApp1@http://localhost:7001/remoteEntry.js',
-        // 对应 EIA-S0-app (7002)
-        remoteApp2: 'remoteApp2@http://localhost:7002/remoteEntry.js',
-      },
+      // 移除硬编码的remotes，改为运行时动态加载
+      remotes: {},
 
       shared: {
-        react: { singleton: true, requiredVersion: '^18.0.0' },
-        'react-dom': { singleton: true, requiredVersion: '^18.0.0' },
+        react: { 
+          singleton: true, 
+          strictVersion: true,
+          requiredVersion: '^19.2.0',
+          eager: false
+        },
+        'react-dom': { 
+          singleton: true,
+          strictVersion: true, 
+          requiredVersion: '^19.2.0',
+          eager: false
+        }
       },
     }),
 

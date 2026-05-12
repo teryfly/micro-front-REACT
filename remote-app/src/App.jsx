@@ -1,12 +1,15 @@
 import React from 'react';
-import Button from './Button';
+import EmbeddedApp from './EmbeddedApp';
 
+// Standalone mode: renders the EmbeddedApp with default props
 function App() {
   return (
-    <div style={{ padding: '20px', fontFamily: 'Arial' }}>
-      <h1>B -📡 Remote App (远程应用-B)</h1>
-      <p>这是运行在 localhost:7001 的独立应用B </p>
-      <Button />
+    <div style={{ height: '100vh', fontFamily: 'Arial, sans-serif' }}>
+      <EmbeddedApp
+        embedded={false}
+        appName="Remote App 模板 (standalone)"
+        theme={{ primaryColor: '#1890ff' }}
+      />
     </div>
   );
 }

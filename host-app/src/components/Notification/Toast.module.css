@@ -1,0 +1,84 @@
+.container {
+  position: fixed;
+  top: 80px; /* Below the 60px header + some spacing */
+  right: 24px;
+  z-index: 2000; /* Higher than menu (1000) */
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  pointer-events: none; /* Allow clicking through the container area */
+}
+.toast {
+  pointer-events: auto; /* Re-enable clicking on toasts */
+  min-width: 300px;
+  max-width: 450px;
+  padding: 16px;
+  border-radius: 4px;
+  background: #fff;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  animation: slideIn 0.3s ease;
+  border-left: 4px solid transparent;
+}
+@keyframes slideIn {
+  from {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+.icon {
+  font-size: 20px;
+  line-height: 1;
+}
+.content {
+  flex: 1;
+}
+.message {
+  font-size: 14px;
+  color: var(--color-text, #333);
+  line-height: 1.5;
+  margin: 0;
+}
+.closeBtn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: #999;
+  padding: 0;
+  font-size: 18px;
+  line-height: 1;
+}
+.closeBtn:hover {
+  color: #666;
+}
+/* Variants */
+.success {
+  border-left-color: var(--color-success, #52c41a);
+}
+.success .icon {
+  color: var(--color-success, #52c41a);
+}
+.error {
+  border-left-color: var(--color-error, #ff4d4f);
+}
+.error .icon {
+  color: var(--color-error, #ff4d4f);
+}
+.warning {
+  border-left-color: var(--color-warning, #faad14);
+}
+.warning .icon {
+  color: var(--color-warning, #faad14);
+}
+.info {
+  border-left-color: var(--color-info, #1890ff);
+}
+.info .icon {
+  color: var(--color-info, #1890ff);
+}

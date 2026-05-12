@@ -1,0 +1,114 @@
+.errorFallback {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 400px;
+  padding: 40px;
+  text-align: center;
+}
+
+.errorIcon {
+  font-size: 64px;
+  margin-bottom: 24px;
+}
+
+.errorTitle {
+  font-size: 24px;
+  margin: 0 0 12px 0;
+  color: var(--color-error, #ff4d4f);
+}
+
+.errorMessage {
+  font-size: 16px;
+  margin: 0 0 24px 0;
+  color: var(--color-text-secondary, #666666);
+}
+
+.errorDetails {
+  background-color: var(--color-bg-secondary, #f5f5f5);
+  border-radius: 4px;
+  padding: 16px;
+  margin: 24px 0;
+  text-align: left;
+  max-width: 800px;
+  overflow: auto;
+  max-height: 300px;
+}
+
+.errorDetails h3 {
+  font-size: 14px;
+  margin: 0 0 8px 0;
+  color: var(--color-text, #333333);
+}
+
+.errorDetails pre {
+  font-size: 12px;
+  margin: 0;
+  white-space: pre-wrap;
+  word-break: break-word;
+  color: var(--color-error, #ff4d4f);
+}
+
+.actions {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 24px;
+}
+
+.primaryButton {
+  padding: 10px 24px;
+  font-size: 14px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  background-color: var(--color-primary, #1890ff);
+  color: #ffffff;
+  transition: all 0.2s;
+}
+
+.primaryButton:hover {
+  background-color: var(--color-primary-dark, #096dd9);
+}
+
+.secondaryButton {
+  padding: 10px 24px;
+  font-size: 14px;
+  border: 1px solid var(--color-border, #d9d9d9);
+  border-radius: 4px;
+  cursor: pointer;
+  background-color: transparent;
+  color: var(--color-text, #333333);
+  transition: all 0.2s;
+}
+
+.secondaryButton:hover {
+  border-color: var(--color-primary, #1890ff);
+  color: var(--color-primary, #1890ff);
+}
+
+.tips {
+  background-color: var(--color-info-bg, #e6f7ff);
+  border-left: 4px solid var(--color-info, #1890ff);
+  padding: 16px;
+  border-radius: 4px;
+  max-width: 600px;
+  text-align: left;
+}
+
+.tips p {
+  margin: 0 0 8px 0;
+  font-weight: 600;
+  color: var(--color-text, #333333);
+}
+
+.tips ul {
+  margin: 0;
+  padding-left: 20px;
+}
+
+.tips li {
+  margin: 4px 0;
+  font-size: 14px;
+  color: var(--color-text-secondary, #666666);
+}

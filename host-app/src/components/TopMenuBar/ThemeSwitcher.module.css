@@ -1,0 +1,21 @@
+.themeSwitcher {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  cursor: pointer;
+  border-radius: 50%;
+  transition: all 0.2s;
+  background-color: rgba(255, 255, 255, 0.1);
+}
+
+.themeSwitcher:hover {
+  background-color: rgba(255, 255, 255, 0.2);
+  transform: scale(1.1);
+}
+
+.icon {
+  font-size: 20px;
+  line-height: 1;
+}

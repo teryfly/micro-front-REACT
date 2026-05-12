@@ -1,0 +1,52 @@
+{
+  "version": "1.0.0",
+  "environment": "development",
+  "branding": {
+    "logo": "🏠",
+    "title": "微前端平台",
+    "showTitle": true
+  },
+  "theme": {
+    "default": "light",
+    "allowSwitch": true
+  },
+  "menuGroups": [
+    {
+      "id": "governance",
+      "name": "治理中心",
+      "icon": "📋",
+      "order": 1
+    },
+    {
+      "id": "business",
+      "name": "业务应用",
+      "icon": "💼",
+      "order": 2
+    }
+  ],
+  "apps": [
+    {
+      "id": "eia-s0-app",
+      "name": "eiaS0App",
+      "displayName": "Governance BC",
+      "description": "文档治理与配置管理",
+      "icon": "📋",
+      "group": "治理中心",
+      "route": "/governance",
+      "entry": {
+        "development": "http://localhost:7002/remoteEntry.js",
+        "production": "https://eia-s0.production.com/remoteEntry.js"
+      },
+      "enabled": true,
+      "defaultActive": true,
+      "permissions": [
+        "governance.view",
+        "governance.manage"
+      ],
+      "metadata": {
+        "version": "1.0.0",
+        "author": "Platform Team"
+      }
+    }
+  ]
+}
