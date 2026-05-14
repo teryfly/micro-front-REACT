@@ -177,8 +177,15 @@ export default function MenuConfigPage() {
         </div>
         
         <div className={styles.headerRight}>
-          <button 
-            onClick={handleReset} 
+          <button
+            onClick={() => navigate('/app-generator')}
+            className={styles.generatorButton}
+            title="跳转到子应用生成器"
+          >
+            ✨ 添加并生成子应用
+          </button>
+          <button
+            onClick={handleReset}
             className={styles.resetButton}
             disabled={saving}
           >

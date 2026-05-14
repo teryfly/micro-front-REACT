@@ -47,6 +47,30 @@
         "version": "1.0.0",
         "author": "Platform Team"
       }
+    },
+    {
+      "id": "eia-s1-app",
+      "name": "eiaS1App",
+      "displayName": "模板管理中心",
+      "description": "RUP 模板全生命周期管理 — 工作流定义、节点配置、依赖编排与发布",
+      "icon": "📐",
+      "group": "业务应用",
+      "route": "/template-management",
+      "entry": {
+        "development": "http://localhost:7005/remoteEntry.js",
+        "production": "https://eia-s1.production.com/remoteEntry.js"
+      },
+      "expose": "./EmbeddedApp",
+      "enabled": true,
+      "defaultActive": false,
+      "permissions": [
+        "template.view",
+        "template.manage"
+      ],
+      "metadata": {
+        "version": "1.0.0",
+        "author": "Platform Team"
+      }
     }
   ]
 }

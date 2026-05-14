@@ -26,7 +26,7 @@ const NavMenu = () => {
     alignItems: 'center',
     gap: '8px',
     padding: '12px 24px',
-    color: '#333',
+    color: 'var(--color-text, #333)',
     textDecoration: 'none',
     transition: 'background-color 0.2s',
     cursor: 'pointer',
@@ -34,8 +34,8 @@ const NavMenu = () => {
 
   const navLinkActiveStyle = {
     ...navLinkStyle,
-    backgroundColor: '#4CAF50',
-    color: 'white',
+    backgroundColor: 'var(--color-primary, #1890ff)',
+    color: 'var(--color-text-inverse, white)',
     fontWeight: 600,
   };
 

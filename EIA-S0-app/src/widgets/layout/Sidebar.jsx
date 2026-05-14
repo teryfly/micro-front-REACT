@@ -8,8 +8,8 @@ import NavMenu from './NavMenu';
 const Sidebar = ({ isOpen }) => {
   const sidebarStyle = {
     width: isOpen ? '250px' : '0',
-    backgroundColor: '#f5f5f5',
-    borderRight: '1px solid #ddd',
+    backgroundColor: 'var(--color-bg-secondary, #f5f5f5)',
+    borderRight: '1px solid var(--color-border, #ddd)',
     overflowY: 'auto',
     transition: 'transform 0.3s ease, width 0.3s ease',
     flexShrink: 0,

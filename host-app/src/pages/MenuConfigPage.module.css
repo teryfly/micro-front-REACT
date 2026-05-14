@@ -64,6 +64,23 @@
   gap: 12px;
 }
 
+.generatorButton {
+  padding: 10px 20px;
+  font-size: 14px;
+  font-weight: 600;
+  border: 2px solid var(--color-primary, #1890ff);
+  border-radius: 4px;
+  cursor: pointer;
+  background-color: transparent;
+  color: var(--color-primary, #1890ff);
+  transition: all 0.2s;
+}
+
+.generatorButton:hover {
+  background-color: var(--color-primary, #1890ff);
+  color: #ffffff;
+}
+
 .saveButton,
 .cancelButton,
 .resetButton {

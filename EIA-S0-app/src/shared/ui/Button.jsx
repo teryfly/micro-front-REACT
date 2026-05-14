@@ -29,16 +29,16 @@ const Button = ({
 
   const variants = {
     primary: {
-      backgroundColor: '#4CAF50',
-      color: 'white',
+      backgroundColor: 'var(--color-primary, #1890ff)',
+      color: 'var(--color-text-inverse, white)',
     },
     secondary: {
-      backgroundColor: '#f0f0f0',
-      color: '#333',
+      backgroundColor: 'var(--color-bg-hover, #f0f0f0)',
+      color: 'var(--color-text, #333)',
     },
     danger: {
-      backgroundColor: '#f44336',
-      color: 'white',
+      backgroundColor: 'var(--color-error, #f44336)',
+      color: 'var(--color-text-inverse, white)',
     },
   };
 

@@ -71,15 +71,6 @@ export default function TopMenuBar() {
       </div>
 
       <div className={styles.rightSection}>
-        {/* App Generator shortcut */}
-        <div
-          className={styles.configIcon}
-          onClick={() => navigate('/app-generator')}
-          title="创建子应用"
-        >
-          <span>✨</span>
-        </div>
-
         {/* Menu Config Icon */}
         <div
           className={styles.configIcon}

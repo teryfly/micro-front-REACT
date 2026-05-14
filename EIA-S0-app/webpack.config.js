@@ -44,6 +44,7 @@ module.exports = {
             options: {
               modules: {
                 localIdentName: '[name]__[local]--[hash:base64:5]',
+                namedExport: false,
               },
               sourceMap: true,
             },
@@ -85,11 +86,12 @@ module.exports = {
     }),
 
     new ModuleFederationPlugin({
-      name: 'remoteApp2',
+      name: 'eiaS0App',
       filename: 'remoteEntry.js',
       exposes: {
-        './Button': './src/Button',
+        './EmbeddedApp': './src/app/EmbeddedApp',
         './App': './src/app/App',
+        './Button': './src/Button',
       },
       shared: {
         react: { singleton: true, requiredVersion: '^19.0.0' },
