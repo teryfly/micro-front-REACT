@@ -1,51 +1,27 @@
 import React from 'react';
+import styles from './ErrorMessage.module.css';
 
 /**
  * Error message component
  * Displays error message with optional retry button
+ * 
+ * @param {Object} props
+ * @param {string} props.message - Error message text
+ * @param {Function} [props.onRetry] - Retry handler (shows retry button if provided)
+ * 
+ * @example
+ * <ErrorMessage
+ *   message="Failed to load data"
+ *   onRetry={() => refetch()}
+ * />
  */
 const ErrorMessage = ({ message, onRetry }) => {
-  const containerStyle = {
-    display: 'flex',
-    flexDirection: 'column',
-    alignItems: 'center',
-    justifyContent: 'center',
-    padding: '32px',
-    gap: '16px',
-    backgroundColor: '#fff3f3',
-    border: '1px solid #ffcccc',
-    borderRadius: '4px',
-  };
-
-  const iconStyle = {
-    fontSize: '32px',
-  };
-
-  const messageStyle = {
-    margin: 0,
-    fontSize: '14px',
-    color: '#f44336',
-    textAlign: 'center',
-    maxWidth: '400px',
-  };
-
-  const retryButtonStyle = {
-    padding: '8px 16px',
-    backgroundColor: '#4CAF50',
-    color: 'white',
-    border: 'none',
-    borderRadius: '4px',
-    cursor: 'pointer',
-    fontSize: '14px',
-    fontWeight: 500,
-  };
-
   return (
-    <div style={containerStyle} role="alert">
-      <div style={iconStyle} aria-hidden="true">⚠️</div>
-      <p style={messageStyle}>{message}</p>
+    <div className={styles.errorContainer} role="alert">
+      <div className={styles.icon} aria-hidden="true">⚠️</div>
+      <p className={styles.message}>{message}</p>
       {onRetry && (
-        <button style={retryButtonStyle} onClick={onRetry} type="button">
+        <button className={styles.retryButton} onClick={onRetry} type="button">
           Retry
         </button>
       )}

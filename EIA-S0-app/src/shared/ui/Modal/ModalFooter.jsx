@@ -1,16 +1,12 @@
 import React from 'react';
+import styles from './Modal.module.css';
 
+/**
+ * Modal footer component
+ * Internal component used by Modal
+ */
 const ModalFooter = ({ children }) => {
-  const modalFooterStyle = {
-    padding: '24px',
-    borderTop: '1px solid #ddd',
-    display: 'flex',
-    gap: '8px',
-    justifyContent: 'flex-end',
-    flexShrink: 0,
-  };
-
-  return <div style={modalFooterStyle}>{children}</div>;
+  return <div className={styles.modalFooter}>{children}</div>;
 };
 
 export default ModalFooter;

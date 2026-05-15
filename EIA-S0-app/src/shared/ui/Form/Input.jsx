@@ -1,7 +1,33 @@
 import React from 'react';
+import styles from './Form.module.css';
 
 /**
  * Input component with validation support
+ * Displays label, error message, and supports various input types
+ * 
+ * @param {Object} props
+ * @param {string} props.name - Input name and ID
+ * @param {string} props.label - Input label
+ * @param {string} [props.type='text'] - Input type (text/email/password/number)
+ * @param {string} props.value - Input value
+ * @param {Function} props.onChange - Change handler
+ * @param {Function} [props.onBlur] - Blur handler
+ * @param {string} [props.error] - Error message
+ * @param {boolean} [props.required=false] - Required field indicator
+ * @param {boolean} [props.disabled=false] - Disabled state
+ * @param {string} [props.placeholder] - Placeholder text
+ * @param {number} [props.maxLength] - Maximum length
+ * 
+ * @example
+ * <Input
+ *   name="email"
+ *   label="Email Address"
+ *   type="email"
+ *   value={email}
+ *   onChange={(e) => setEmail(e.target.value)}
+ *   error={errors.email}
+ *   required
+ * />
  */
 const Input = ({
   name,
@@ -17,45 +43,11 @@ const Input = ({
   maxLength,
   ...props
 }) => {
-  const formGroupStyle = {
-    display: 'flex',
-    flexDirection: 'column',
-    gap: '4px',
-  };
-
-  const labelStyle = {
-    fontSize: '14px',
-    fontWeight: 500,
-    color: '#333',
-  };
-
-  const requiredStyle = {
-    color: '#f44336',
-    marginLeft: '4px',
-  };
-
-  const inputStyle = {
-    padding: '10px 12px',
-    fontSize: '14px',
-    fontFamily: 'inherit',
-    border: `1px solid ${error ? '#f44336' : '#ddd'}`,
-    borderRadius: '4px',
-    transition: 'border-color 0.2s, box-shadow 0.2s',
-    backgroundColor: '#ffffff',
-    color: '#333',
-  };
-
-  const errorTextStyle = {
-    fontSize: '12px',
-    color: '#f44336',
-    marginTop: '2px',
-  };
-
   return (
-    <div style={formGroupStyle}>
-      <label htmlFor={name} style={labelStyle}>
+    <div className={styles.formGroup}>
+      <label htmlFor={name} className={styles.label}>
         {label}
-        {required && <span style={requiredStyle} aria-label="required">*</span>}
+        {required && <span className={styles.required} aria-label="required">*</span>}
       </label>
       
       <input
@@ -68,7 +60,7 @@ const Input = ({
         disabled={disabled}
         placeholder={placeholder}
         maxLength={maxLength}
-        style={inputStyle}
+        className={`${styles.input} ${error ? styles.inputError : ''}`}
         aria-invalid={!!error}
         aria-describedby={error ? `${name}-error` : undefined}
         aria-required={required}
@@ -76,7 +68,7 @@ const Input = ({
       />
       
       {error && (
-        <span id={`${name}-error`} style={errorTextStyle} role="alert">
+        <span id={`${name}-error`} className={styles.errorText} role="alert">
           {error}
         </span>
       )}

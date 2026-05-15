@@ -8,11 +8,12 @@ import axios from 'axios';
 import { injectAuthToken, handleRequestError } from './requestInterceptor';
 import { transformResponse } from './responseInterceptor';
 import { transformError } from './errorHandler';
+import { getEnv } from '../utils/env';
 
 /**
  * API base URL from environment or default
  */
-const BASE_URL = process.env.REACT_APP_API_BASE_URL || 'http://localhost:5090';
+const BASE_URL = getEnv('REACT_APP_API_BASE_URL', 'http://localhost:5090');
 
 /**
  * Create Axios instance with base configuration
@@ -29,23 +30,17 @@ const axiosInstance = axios.create({
  * Apply request interceptor
  * Injects authentication token and request metadata
  */
-axiosInstance.interceptors.request.use(
-  injectAuthToken,
-  handleRequestError
-);
+axiosInstance.interceptors.request.use(injectAuthToken, handleRequestError);
 
 /**
  * Apply response interceptor
  * Transforms responses and handles errors
  */
-axiosInstance.interceptors.response.use(
-  transformResponse,
-  (error) => {
-    // Transform error using centralized error handler
-    const transformedError = transformError(error);
-    return Promise.reject(transformedError);
-  }
-);
+axiosInstance.interceptors.response.use(transformResponse, (error) => {
+  // Transform error using centralized error handler
+  const transformedError = transformError(error);
+  return Promise.reject(transformedError);
+});
 
 /**
  * API Client wrapper with standardized methods
@@ -58,10 +53,6 @@ const apiClient = {
    * @param {Object} [config={}] - Axios request config
    * @returns {Promise<T>} Response data
    * @throws {Error} Transformed error with user message
-   * 
-   * @example
-   * const users = await apiClient.get('/api/users');
-   * const user = await apiClient.get('/api/users/123');
    */
   get: async (url, config = {}) => {
     const response = await axiosInstance.get(url, config);
@@ -76,9 +67,6 @@ const apiClient = {
    * @param {Object} [config={}] - Axios request config
    * @returns {Promise<T>} Response data
    * @throws {Error} Transformed error with user message
-   * 
-   * @example
-   * const newUser = await apiClient.post('/api/users', { name: 'John' });
    */
   post: async (url, data = {}, config = {}) => {
     const response = await axiosInstance.post(url, data, config);
@@ -93,9 +81,6 @@ const apiClient = {
    * @param {Object} [config={}] - Axios request config
    * @returns {Promise<T>} Response data
    * @throws {Error} Transformed error with user message
-   * 
-   * @example
-   * const updated = await apiClient.put('/api/users/123', { name: 'Jane' });
    */
   put: async (url, data = {}, config = {}) => {
     const response = await axiosInstance.put(url, data, config);
@@ -109,9 +94,6 @@ const apiClient = {
    * @param {Object} [config={}] - Axios request config
    * @returns {Promise<T>} Response data
    * @throws {Error} Transformed error with user message
-   * 
-   * @example
-   * await apiClient.delete('/api/users/123');
    */
   delete: async (url, config = {}) => {
     const response = await axiosInstance.delete(url, config);
@@ -126,9 +108,6 @@ const apiClient = {
    * @param {Object} [config={}] - Axios request config
    * @returns {Promise<T>} Response data
    * @throws {Error} Transformed error with user message
-   * 
-   * @example
-   * const patched = await apiClient.patch('/api/users/123', { status: 'active' });
    */
   patch: async (url, data = {}, config = {}) => {
     const response = await axiosInstance.patch(url, data, config);

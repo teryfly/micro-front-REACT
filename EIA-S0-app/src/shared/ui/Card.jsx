@@ -1,35 +1,24 @@
 import React from 'react';
+import styles from './Card.module.css';
 
 /**
  * Card container component
  * Container with border, shadow, and optional title
+ * 
+ * @param {Object} props
+ * @param {React.ReactNode} props.children - Card content
+ * @param {string} [props.title] - Optional card title
+ * 
+ * @example
+ * <Card title="User Details">
+ *   <p>Content goes here</p>
+ * </Card>
  */
 const Card = ({ children, title }) => {
-  const cardStyle = {
-    backgroundColor: 'white',
-    border: '1px solid #ddd',
-    borderRadius: '4px',
-    boxShadow: '0 1px 3px rgba(0,0,0,0.1)',
-    overflow: 'hidden',
-  };
-
-  const cardHeaderStyle = {
-    padding: '24px',
-    borderBottom: '1px solid #ddd',
-    fontSize: '18px',
-    fontWeight: 600,
-    color: '#333',
-    backgroundColor: '#f5f5f5',
-  };
-
-  const cardBodyStyle = {
-    padding: '24px',
-  };
-
   return (
-    <div style={cardStyle}>
-      {title && <div style={cardHeaderStyle}>{title}</div>}
-      <div style={cardBodyStyle}>{children}</div>
+    <div className={styles.card}>
+      {title && <div className={styles.cardHeader}>{title}</div>}
+      <div className={styles.cardBody}>{children}</div>
     </div>
   );
 };

@@ -2,21 +2,10 @@ import { lazy } from 'react';
 
 /**
  * Application route configuration
- * All feature routes are lazy-loaded for code splitting
- * Each route maps to a feature manager component
- * 
- * Route Structure:
- * - path: URL path for the route
- * - element: Lazy-loaded React component
- * - label: Display name for navigation menu
- * - icon: Emoji icon for visual identification
- * 
- * @module routeConfig
- */
-
-/**
- * Application routes
- * Note: '/' and '/doctype' both map to DocTypeManager (default route)
+ * Routes are lazy-loaded for code splitting.
+ *
+ * Note: Feature modules are expected to exist in future phases.
+ * This phase establishes the routing contract and layout integration.
  */
 export const routes = [
   {

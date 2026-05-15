@@ -68,6 +68,7 @@ export const endpoints = {
     create: `${BASE_URL}/Category`,
     update: (id) => `${BASE_URL}/Category/${id}`,
     delete: (id) => `${BASE_URL}/Category/${id}`,
+    deleteTree: (id) => `${BASE_URL}/Category/${id}/tree`, // Recursive delete
   },
 
   /**

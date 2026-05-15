@@ -1,13 +1,25 @@
 /**
- * DocType Manager
- * Main container for DocType management
+ * DocType Management Container
+ * Orchestrates all DocType CRUD operations and UI components
+ * @module DocTypeManager
  */
 
 import React, { useState } from 'react';
+import DocTypeListTable from './components/DocTypeListTable';
+import DocTypeListToolbar from './components/DocTypeListToolbar';
+import DocTypeFormBasic from './components/DocTypeFormBasic';
+import DocTypeFormPhases from './components/DocTypeFormPhases';
+import DocTypeDetail from './components/DocTypeDetail';
 import { useDocType } from './hooks/useDocType';
-import { useModal } from '../../core/hooks';
-import { Card, Button, Table, Modal, Badge } from '../../ui/components';
+import { useDocTypeForm } from './hooks/useDocTypeForm';
+import { useModal } from '../../shared/hooks/useModal';
+import Modal from '../../shared/ui/Modal/Modal';
+import Card from '../../shared/ui/Card';
 
+/**
+ * DocType management container component
+ * Main entry point for DocType feature
+ */
 const DocTypeManager = () => {
   const {
     docTypes,
@@ -20,7 +32,50 @@ const DocTypeManager = () => {
   } = useDocType();
 
   const [searchTerm, setSearchTerm] = useState('');
+  const { isOpen: isFormOpen, open: openForm, close: closeForm } = useModal();
   const { isOpen: isDetailOpen, open: openDetail, close: closeDetail } = useModal();
+  const [editingId, setEditingId] = useState(null);
+
+  const {
+    formData,
+    currentStep,
+    errors,
+    updateField,
+    nextStep,
+    prevStep,
+    handleSubmit,
+    setFormData,
+  } = useDocTypeForm(null, async (data) => {
+    if (editingId) {
+      await updateDocType(editingId, data);
+    } else {
+      await createDocType(data);
+    }
+    closeForm();
+  });
+
+  const handleCreate = () => {
+    setEditingId(null);
+    setFormData({
+      code: '',
+      name: '',
+      description: '',
+      categoryId: '',
+      aiDraftPromptTemplateId: '',
+      allowedPhases: [],
+      defaultPhase: '',
+      metadata: {},
+      customFields: {},
+    });
+    openForm();
+  };
+
+  const handleEdit = async (id) => {
+    setEditingId(id);
+    await selectDocType(id);
+    setFormData(selectedDocType);
+    openForm();
+  };
 
   const handleView = async (id) => {
     await selectDocType(id);
@@ -38,73 +93,58 @@ const DocTypeManager = () => {
     dt.code.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
-  const columns = [
-    { key: 'code', label: 'Code', sortable: true },
-    { key: 'name', label: 'Name', sortable: true },
-    { key: 'category', label: 'Category', render: (row) => row.category?.name || '-' },
-    { key: 'defaultPhase', label: 'Default Phase', render: (row) => <Badge type="info">{row.defaultPhase}</Badge> },
-    { key: 'allowedPhases', label: 'Allowed Phases', render: (row) => `${row.allowedPhases?.length || 0} phases` },
-    {
-      key: 'actions',
-      label: 'Actions',
-      render: (row) => (
-        <div style={{ display: 'flex', gap: '8px' }}>
-          <Button size="small" onClick={(e) => { e.stopPropagation(); handleView(row.id); }}>View</Button>
-          <Button size="small" variant="danger" onClick={(e) => { e.stopPropagation(); handleDelete(row.id); }}>Delete</Button>
-        </div>
-      ),
-    },
-  ];
-
   return (
     <Card>
-      <h1 style={{ marginBottom: '24px' }}>Document Type Management</h1>
+      <h1>Document Type Management</h1>
       
-      <div style={{ display: 'flex', gap: '16px', marginBottom: '16px', alignItems: 'flex-end' }}>
-        <div style={{ flex: 1, maxWidth: '400px' }}>
-          <input
-            type="text"
-            placeholder="Search by code or name..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            style={{
-              width: '100%',
-              padding: '10px 12px',
-              fontSize: '14px',
-              border: '1px solid #ddd',
-              borderRadius: '4px',
-            }}
-          />
-        </div>
-        <Button variant="primary">+ Create DocType</Button>
-      </div>
+      <DocTypeListToolbar
+        searchTerm={searchTerm}
+        onSearchChange={setSearchTerm}
+        onCreateClick={handleCreate}
+      />
       
-      <Table
-        data={filteredDocTypes}
-        columns={columns}
+      <DocTypeListTable
+        docTypes={filteredDocTypes}
         loading={loading}
-        onRowClick={(row) => handleView(row.id)}
-        emptyMessage="No document types found"
+        onEdit={handleEdit}
+        onView={handleView}
+        onDelete={handleDelete}
       />
 
-      <Modal isOpen={isDetailOpen} onClose={closeDetail} title="DocType Details" size="medium">
-        {selectedDocType && (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-            <div><strong>Code:</strong> {selectedDocType.code}</div>
-            <div><strong>Name:</strong> {selectedDocType.name}</div>
-            <div><strong>Description:</strong> {selectedDocType.description || '-'}</div>
-            <div><strong>Category:</strong> {selectedDocType.category?.name || '-'}</div>
-            <div><strong>Default Phase:</strong> <Badge type="info">{selectedDocType.defaultPhase}</Badge></div>
-            <div>
-              <strong>Allowed Phases:</strong>
-              <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', marginTop: '8px' }}>
-                {(selectedDocType.allowedPhases || []).map(phase => (
-                  <Badge key={phase} type="default">{phase}</Badge>
-                ))}
-              </div>
-            </div>
-          </div>
+      <Modal 
+        isOpen={isFormOpen} 
+        onClose={closeForm} 
+        title={editingId ? 'Edit DocType' : 'Create DocType'}
+        size="large"
+      >
+        {currentStep === 1 ? (
+          <DocTypeFormBasic
+            formData={formData}
+            errors={errors}
+            onFieldChange={updateField}
+            onNext={nextStep}
+            onCancel={closeForm}
+            isEditMode={!!editingId}
+          />
+        ) : (
+          <DocTypeFormPhases
+            formData={formData}
+            errors={errors}
+            onFieldChange={updateField}
+            onSubmit={handleSubmit}
+            onBack={prevStep}
+            onCancel={closeForm}
+            isEditMode={!!editingId}
+          />
         )}
+      </Modal>
+
+      <Modal 
+        isOpen={isDetailOpen} 
+        onClose={closeDetail} 
+        title="DocType Details"
+      >
+        <DocTypeDetail docType={selectedDocType} />
       </Modal>
     </Card>
   );

@@ -1,7 +1,23 @@
 import React from 'react';
+import styles from './Button.module.css';
 
 /**
  * Button component with loading states and variants
+ * Supports multiple sizes, variants, and loading state with spinner
+ * 
+ * @param {Object} props
+ * @param {React.ReactNode} props.children - Button content
+ * @param {Function} [props.onClick] - Click handler
+ * @param {string} [props.type='button'] - Button type (button/submit/reset)
+ * @param {string} [props.variant='primary'] - Button style variant (primary/secondary/danger)
+ * @param {string} [props.size='medium'] - Button size (small/medium/large)
+ * @param {boolean} [props.disabled=false] - Disabled state
+ * @param {boolean} [props.loading=false] - Loading state with spinner
+ * 
+ * @example
+ * <Button onClick={handleClick} variant="primary" loading={isSubmitting}>
+ *   Submit
+ * </Button>
  */
 const Button = ({
   children,
@@ -13,72 +29,17 @@ const Button = ({
   loading = false,
   ...props
 }) => {
-  const baseStyle = {
-    border: 'none',
-    borderRadius: '4px',
-    cursor: disabled || loading ? 'not-allowed' : 'pointer',
-    transition: 'all 0.2s ease',
-    display: 'inline-flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: '8px',
-    fontFamily: 'inherit',
-    fontWeight: 500,
-    opacity: disabled ? 0.6 : 1,
-  };
-
-  const variants = {
-    primary: {
-      backgroundColor: 'var(--color-primary, #1890ff)',
-      color: 'var(--color-text-inverse, white)',
-    },
-    secondary: {
-      backgroundColor: 'var(--color-bg-hover, #f0f0f0)',
-      color: 'var(--color-text, #333)',
-    },
-    danger: {
-      backgroundColor: 'var(--color-error, #f44336)',
-      color: 'var(--color-text-inverse, white)',
-    },
-  };
-
-  const sizes = {
-    small: {
-      padding: '6px 12px',
-      fontSize: '12px',
-    },
-    medium: {
-      padding: '10px 20px',
-      fontSize: '14px',
-    },
-    large: {
-      padding: '14px 28px',
-      fontSize: '16px',
-    },
-  };
-
-  const buttonStyle = {
-    ...baseStyle,
-    ...variants[variant],
-    ...sizes[size],
-    position: loading ? 'relative' : 'static',
-    color: loading ? 'transparent' : variants[variant].color,
-  };
-
-  const spinnerStyle = {
-    position: 'absolute',
-    width: '12px',
-    height: '12px',
-    border: '2px solid rgba(255,255,255,0.3)',
-    borderTopColor: 'white',
-    borderRadius: '50%',
-    animation: 'spin 0.6s linear infinite',
-  };
+  const classNames = [
+    styles.button,
+    styles[variant],
+    styles[size],
+    loading && styles.loading,
+  ].filter(Boolean).join(' ');
 
   return (
     <button
       type={type}
-      style={buttonStyle}
+      className={classNames}
       onClick={onClick}
       disabled={disabled || loading}
       aria-busy={loading}
@@ -86,12 +47,7 @@ const Button = ({
     >
       {loading ? (
         <>
-          <span style={spinnerStyle} aria-hidden="true"></span>
-          <style>{`
-            @keyframes spin {
-              to { transform: rotate(360deg); }
-            }
-          `}</style>
+          <span className={styles.spinner} aria-hidden="true"></span>
           Loading...
         </>
       ) : (

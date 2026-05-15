@@ -1,9 +1,29 @@
 import React, { useState, useMemo } from 'react';
 import TableHeader from './TableHeader';
 import TableBody from './TableBody';
+import styles from './Table.module.css';
 
 /**
  * Data table component with sorting
+ * Displays tabular data with sortable columns
+ * 
+ * @param {Object} props
+ * @param {Array<Object>} props.data - Table data array
+ * @param {Array<Column>} props.columns - Column definitions [{key, label, sortable, render}]
+ * @param {Function} [props.onRowClick] - Row click handler
+ * @param {boolean} [props.loading=false] - Loading state
+ * @param {string} [props.emptyMessage='No data available'] - Empty state message
+ * 
+ * @example
+ * <Table
+ *   data={users}
+ *   columns={[
+ *     { key: 'name', label: 'Name', sortable: true },
+ *     { key: 'email', label: 'Email', sortable: true },
+ *     { key: 'status', label: 'Status', render: (row) => <Badge>{row.status}</Badge> }
+ *   ]}
+ *   onRowClick={(row) => console.log(row)}
+ * />
  */
 const Table = ({
   data = [],
@@ -14,6 +34,7 @@ const Table = ({
 }) => {
   const [sortConfig, setSortConfig] = useState({ key: null, direction: 'asc' });
 
+  // Sort data based on current sort configuration
   const sortedData = useMemo(() => {
     if (!sortConfig.key) return data;
 
@@ -35,38 +56,17 @@ const Table = ({
     }));
   };
 
-  const tableContainerStyle = {
-    width: '100%',
-    overflowX: 'auto',
-    border: '1px solid #ddd',
-    borderRadius: '4px',
-    backgroundColor: 'white',
-  };
-
-  const tableStyle = {
-    width: '100%',
-    borderCollapse: 'collapse',
-    backgroundColor: 'white',
-  };
-
-  const loadingStyle = {
-    padding: '40px',
-    textAlign: 'center',
-    color: '#999',
-    fontSize: '14px',
-  };
-
   if (loading) {
-    return <div style={loadingStyle}>Loading...</div>;
+    return <div className={styles.loading}>Loading...</div>;
   }
 
   if (data.length === 0) {
-    return <div style={loadingStyle}>{emptyMessage}</div>;
+    return <div className={styles.empty}>{emptyMessage}</div>;
   }
 
   return (
-    <div style={tableContainerStyle}>
-      <table style={tableStyle}>
+    <div className={styles.tableContainer}>
+      <table className={styles.table}>
         <TableHeader
           columns={columns}
           sortConfig={sortConfig}

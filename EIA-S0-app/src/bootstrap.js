@@ -1,40 +1,26 @@
+// EIA-S0-app/src/bootstrap.js
 import React from 'react';
 import ReactDOM from 'react-dom/client';
-import App from './app/App';
-// Import global CSS variables
-import './shared/ui/common.module.css';
+import App from './App';
+import { getEnv } from './shared/utils/env';
 
 /**
  * Application bootstrap
- * Supports both standalone mode and Module Federation embedded mode
- * 
- * Configuration Sources (in priority order):
- * 1. URL parameters (?token=...&apiBaseUrl=...)
- * 2. localStorage (for standalone mode)
- * 3. Environment variables (fallback)
- * 
- * URL Parameter Examples:
- * - Standalone: http://localhost:7002/
- * - With token: http://localhost:7002/?token=abc123
- * - Full config: http://localhost:7002/?token=abc123&apiBaseUrl=https://api.host.com
+ * Supports standalone mode and Module Federation mode via URL parameters.
+ *
+ * Supported query parameters:
+ * - token: auth token to seed AuthProvider
+ * - apiBaseUrl: base URL to override API client baseURL
+ *
+ * Example:
+ * http://localhost:7002/?token=abc123&apiBaseUrl=https://api.host.com
  */
-
-// Parse URL parameters for embedded mode
 const urlParams = new URLSearchParams(window.location.search);
-const token = urlParams.get('token') || localStorage.getItem('auth_token');
-const baseURL = urlParams.get('apiBaseUrl') || process.env.REACT_APP_API_BASE_URL;
+const token = urlParams.get('token') || localStorage.getItem('auth_token') || null;
 
-// Log configuration in development mode
-if (process.env.NODE_ENV === 'development') {
-  console.log('🚀 Bootstrap Configuration:', {
-    hasToken: !!token,
-    baseURL: baseURL || 'default',
-    mode: urlParams.has('token') ? 'embedded' : 'standalone',
-  });
-}
+// Avoid direct `process.env` access in browser runtime
+const baseURL =
+  urlParams.get('apiBaseUrl') || getEnv('REACT_APP_API_BASE_URL', undefined);
 
-// Render application
 const root = ReactDOM.createRoot(document.getElementById('root'));
-root.render(
-  <App token={token} baseURL={baseURL} />
-);
+root.render(<App token={token} baseURL={baseURL} />);

@@ -1,28 +1,38 @@
 import React from 'react';
 import NavMenu from './NavMenu';
+import styles from './Layout.module.css';
 
 /**
  * Sidebar navigation component
- * Container for navigation menu with open/close state
+ * Adapts styling based on running mode
+ *
+ * @param {Object} props
+ * @param {boolean} props.isOpen - Sidebar open state
+ * @param {boolean} [props.embedded=false] - Embedded mode flag
+ * @param {Function} [props.onToggle] - Toggle handler (for embedded mode)
  */
-const Sidebar = ({ isOpen }) => {
-  const sidebarStyle = {
-    width: isOpen ? '250px' : '0',
-    backgroundColor: 'var(--color-bg-secondary, #f5f5f5)',
-    borderRight: '1px solid var(--color-border, #ddd)',
-    overflowY: 'auto',
-    transition: 'transform 0.3s ease, width 0.3s ease',
-    flexShrink: 0,
-    transform: isOpen ? 'translateX(0)' : 'translateX(-100%)',
-  };
-
-  const navStyle = {
-    padding: '16px 0',
-  };
-
+const Sidebar = ({ isOpen, embedded = false, onToggle }) => {
   return (
-    <aside style={sidebarStyle} aria-hidden={!isOpen}>
-      <nav style={navStyle} role="navigation" aria-label="Main navigation">
+    <aside
+      className={`${styles.sidebar} ${isOpen ? styles.sidebarOpen : styles.sidebarClosed}`}
+      aria-label="Sidebar navigation"
+      data-embedded={embedded}
+    >
+      {/* Optional: Sidebar header for embedded mode */}
+      {embedded && (
+        <div className={styles.sidebarHeader}>
+          <button
+            className={styles.sidebarToggle}
+            onClick={onToggle}
+            aria-label="Toggle sidebar"
+            type="button"
+          >
+            {isOpen ? '◀' : '▶'}
+          </button>
+        </div>
+      )}
+
+      <nav className={styles.nav} aria-label="Main navigation">
         <NavMenu />
       </nav>
     </aside>
