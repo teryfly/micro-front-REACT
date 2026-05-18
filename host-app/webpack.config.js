@@ -169,7 +169,7 @@ module.exports = {
   },
 
   output: {
-    publicPath: 'http://localhost:7000/',
+    publicPath: process.env.REACT_APP_PUBLIC_PATH || (process.env.NODE_ENV === 'production' ? './' : 'http://localhost:7000/'),
     clean: true
   },
 
