@@ -73,18 +73,18 @@ function validateMenuConfig(menuConfig) {
     // Check required fields
     MENU_VALIDATION_RULES.REQUIRED_FIELDS.ALL.forEach(field => {
       if (item[field] === undefined || item[field] === null) {
-        errors.push({ 
-          field: `items[${index}].${field}`, 
-          message: `${field} is required` 
+        errors.push({
+          field: `items[${index}].${field}`,
+          message: `${field} is required`
         });
       }
     });
 
     // Check unique ID
     if (itemIds.has(item.id)) {
-      errors.push({ 
-        field: `items[${index}].id`, 
-        message: `Duplicate ID: ${item.id}` 
+      errors.push({
+        field: `items[${index}].id`,
+        message: `Duplicate ID: ${item.id}`
       });
     }
     itemIds.add(item.id);
@@ -94,27 +94,27 @@ function validateMenuConfig(menuConfig) {
       const requiredFields = MENU_VALIDATION_RULES.REQUIRED_FIELDS.SUBAPP;
       requiredFields.forEach(field => {
         if (!item.config || !item.config[field]) {
-          errors.push({ 
-            field: `items[${index}].config.${field}`, 
-            message: `${field} is required for subapp` 
+          errors.push({
+            field: `items[${index}].config.${field}`,
+            message: `${field} is required for subapp`
           });
         }
       });
 
       // Validate route format
       if (item.config?.route && !MENU_VALIDATION_RULES.ROUTE_PATTERN.test(item.config.route)) {
-        errors.push({ 
-          field: `items[${index}].config.route`, 
-          message: 'Invalid route format' 
+        errors.push({
+          field: `items[${index}].config.route`,
+          message: 'Invalid route format'
         });
       }
 
       // Check unique route
       if (item.config?.route) {
         if (routes.has(item.config.route)) {
-          errors.push({ 
-            field: `items[${index}].config.route`, 
-            message: `Duplicate route: ${item.config.route}` 
+          errors.push({
+            field: `items[${index}].config.route`,
+            message: `Duplicate route: ${item.config.route}`
           });
         }
         routes.add(item.config.route);
@@ -123,18 +123,18 @@ function validateMenuConfig(menuConfig) {
       const requiredFields = MENU_VALIDATION_RULES.REQUIRED_FIELDS.EXTERNAL;
       requiredFields.forEach(field => {
         if (!item.config || !item.config[field]) {
-          errors.push({ 
-            field: `items[${index}].config.${field}`, 
-            message: `${field} is required for external link` 
+          errors.push({
+            field: `items[${index}].config.${field}`,
+            message: `${field} is required for external link`
           });
         }
       });
 
       // Validate URL format
       if (item.config?.url && !MENU_VALIDATION_RULES.URL_PATTERN.test(item.config.url)) {
-        errors.push({ 
-          field: `items[${index}].config.url`, 
-          message: 'Invalid URL format (must be http:// or https://)' 
+        errors.push({
+          field: `items[${index}].config.url`,
+          message: 'Invalid URL format (must be http:// or https://)'
         });
       }
     }
@@ -144,23 +144,23 @@ function validateMenuConfig(menuConfig) {
   // Check circular references in parentId chain
   const circularCheck = detectCircularReferences(menuConfig.items);
   if (circularCheck.hasCircular) {
-    errors.push({ 
-      field: 'items', 
-      message: `Circular reference detected: ${circularCheck.path.join(' → ')}` 
+    errors.push({
+      field: 'items',
+      message: `Circular reference detected: ${circularCheck.path.join(' → ')}`
     });
   }
 
   // Validate defaultAppId exists and is subapp
   const defaultApp = menuConfig.items.find(item => item.id === menuConfig.defaultAppId);
   if (!defaultApp) {
-    errors.push({ 
-      field: 'defaultAppId', 
-      message: 'Default app ID does not exist in menu items' 
+    errors.push({
+      field: 'defaultAppId',
+      message: 'Default app ID does not exist in menu items'
     });
   } else if (defaultApp.type !== MENU_ITEM_TYPES.SUBAPP) {
-    errors.push({ 
-      field: 'defaultAppId', 
-      message: 'Default app must be a subapp type' 
+    errors.push({
+      field: 'defaultAppId',
+      message: 'Default app must be a subapp type'
     });
   }
 
@@ -228,7 +228,7 @@ export const menuConfigService = {
 
     const userId = getCurrentUserId();
     const storageKey = getUserStorageKey();
-    const stored = localStorage.getItem(storageKey);
+    const stored = localStorage.getItem(storageKey);// 从 localStorage 中获取用户菜单配置，重新登录后需要重新获取
 
     if (stored) {
       try {
@@ -283,7 +283,7 @@ export const menuConfigService = {
     try {
       localStorage.setItem(storageKey, JSON.stringify(menuConfig));
       console.log('[MenuConfigService] Menu config saved successfully');
-      
+
       return {
         success: true,
         message: 'Menu configuration saved successfully',
@@ -315,7 +315,7 @@ export const menuConfigService = {
     try {
       localStorage.removeItem(storageKey);
       console.log('[MenuConfigService] Menu config reset to default');
-      
+
       return {
         success: true,
         message: 'Menu configuration reset to default',
@@ -374,13 +374,12 @@ export const menuConfigService = {
   },
 
   /**
-   * Remove a menu item by its id.
+   * Remove a menu item by its id
    * @param {string} itemId
    * @returns {Promise<Object>} result from updateUserMenuConfig
    */
   async removeSubApp(itemId) {
     const { menuConfig } = await this.getUserMenuConfig();
-    menuConfig.items = menuConfig.items.filter((item) => item.id !== itemId);
     return this.updateUserMenuConfig(menuConfig);
   },
 };

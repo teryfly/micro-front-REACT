@@ -145,6 +145,34 @@ export const DEFAULT_MENU_CONFIG = Object.freeze({
         containerName: "remoteApp1",
       },
     },
+    {
+      id: "remote-app-2",
+      type: "subapp",
+      label: "示例远程子应用2",
+      icon: "🔵",
+      order: 3,
+      parentId: null,
+      config: {
+        appId: "remote-app-1",
+        route: "/remote1",
+        entryUrl: "http://localhost:7001/remoteEntry.js",
+        containerName: "remoteApp1",
+      },
+    },
+    {
+      id: "remote-app-3",
+      type: "subapp",
+      label: "示例远程子应用4",
+      icon: "🔵",
+      order: 3,
+      parentId: null,
+      config: {
+        appId: "remote-app-1",
+        route: "/remote1",
+        entryUrl: "http://localhost:7001/remoteEntry.js",
+        containerName: "remoteApp1",
+      },
+    },
   ],
 });
 
