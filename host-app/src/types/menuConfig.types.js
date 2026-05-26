@@ -66,9 +66,9 @@ export const MENU_VALIDATION_RULES = Object.freeze({
   ROUTE_PATTERN: /^\/[a-zA-Z0-9\-_\/]*$/,
   URL_PATTERN: /^https?:\/\/.+/,
   REQUIRED_FIELDS: {
-    ALL: ['id', 'type', 'label', 'order'],
-    SUBAPP: ['appId', 'route', 'entryUrl', 'containerName'],
-    EXTERNAL: ['url', 'openMode'],
+    ALL: ["id", "type", "label", "order"],
+    SUBAPP: ["appId", "route", "entryUrl", "containerName"],
+    EXTERNAL: ["url", "openMode"],
   },
 });
 
@@ -77,35 +77,72 @@ export const MENU_VALIDATION_RULES = Object.freeze({
  * FIX: Match actual app configurations from original setup
  */
 export const DEFAULT_MENU_CONFIG = Object.freeze({
-  version: '1.0.0',
-  defaultAppId: 'eia-s0-app',
+  version: "1.0.0",
+  defaultAppId: "eia-s0-app",
   items: [
     {
-      id: 'eia-s0-app',
-      type: 'subapp',
-      label: 'Governance BC',
-      icon: '📋',
+      id: "eia-s0-app",
+      type: "subapp",
+      label: "Governance BC",
+      icon: "📋",
       order: 1,
       parentId: null,
       config: {
-        appId: 'eia-s0-app',
-        route: '/eia-s0-app',
-        entryUrl: 'http://localhost:7002/remoteEntry.js',
-        containerName: 'eiaS0App',
+        appId: "eia-s0-app",
+        route: "/eia-s0-app",
+        entryUrl: "http://localhost:7002/remoteEntry.js",
+        containerName: "eiaS0App",
       },
     },
     {
-      id: 'remote-app-1',
-      type: 'subapp',
-      label: '示例远程子应用1',
-      icon: '🔵',
+      id: "parent-category-1",
+      type: "category",
+      label: "系统管理",
+      icon: "⚙️",
       order: 2,
       parentId: null,
+      config: {},
+    },
+    {
+      id: "sub-menu-1",
+      type: "subapp",
+      label: "用户管理",
+      icon: "👥",
+      order: 1,
+      parentId: "parent-category-1",
       config: {
-        appId: 'remote-app-1',
-        route: '/remote1',
-        entryUrl: 'http://localhost:7001/remoteEntry.js',
-        containerName: 'remoteApp1',
+        appId: "user-manager",
+        route: "/user-manager",
+        entryUrl: "http://localhost:7003/remoteEntry.js",
+        containerName: "userManager",
+      },
+    },
+    {
+      id: "sub-menu-2",
+      type: "subapp",
+      label: "角色管理",
+      icon: "🔐",
+      order: 2,
+      parentId: "parent-category-1",
+      config: {
+        appId: "role-manager",
+        route: "/role-manager",
+        entryUrl: "http://localhost:7004/remoteEntry.js",
+        containerName: "roleManager",
+      },
+    },
+    {
+      id: "remote-app-1",
+      type: "subapp",
+      label: "示例远程子应用1",
+      icon: "🔵",
+      order: 3,
+      parentId: null,
+      config: {
+        appId: "remote-app-1",
+        route: "/remote1",
+        entryUrl: "http://localhost:7001/remoteEntry.js",
+        containerName: "remoteApp1",
       },
     },
   ],
@@ -115,15 +152,15 @@ export const DEFAULT_MENU_CONFIG = Object.freeze({
  * Menu item type enumeration
  */
 export const MENU_ITEM_TYPES = Object.freeze({
-  SUBAPP: 'subapp',
-  EXTERNAL: 'external',
-  CATEGORY: 'category',
+  SUBAPP: "subapp",
+  EXTERNAL: "external",
+  CATEGORY: "category",
 });
 
 /**
  * External link open modes
  */
 export const EXTERNAL_OPEN_MODES = Object.freeze({
-  NEW_TAB: 'newTab',
-  IFRAME: 'iframe',
+  NEW_TAB: "newTab",
+  IFRAME: "iframe",
 });
