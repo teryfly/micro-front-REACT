@@ -27,8 +27,7 @@ export default function TopMenuBar() {
     loadMenuConfig();
   }, []);
   React.useMemo(() => {
-    // 初始化或路由变化时，根据当前路由设置树形菜单选中项
-    console.log('0000000000000000000000000000000000000', location.pathname);
+    // 初始化或路由变化时，根据当前路由设置树形菜单选中项 
     if (!menuConfig) return [];
     menuConfig.items.map((item) => {
       if (item.type === MENU_ITEM_TYPES.SUBAPP) {
@@ -158,6 +157,7 @@ export default function TopMenuBar() {
     if (menuNode.type === MENU_ITEM_TYPES.SUBAPP) {
       const targetPath = `/app${menuNode.config.route}`;
       navigate(targetPath);
+      handleDrawerClose()
     } else if (menuNode.type === MENU_ITEM_TYPES.EXTERNAL) {
       if (menuNode.config.openMode === EXTERNAL_OPEN_MODES.NEW_TAB) {
         window.open(menuNode.config.url, '_blank', 'noopener,noreferrer');
@@ -244,16 +244,18 @@ export default function TopMenuBar() {
                 />
               </div>
 
-              <div className={styles.categorySection}>
-                {categories.map(cat => (
-                  <button
-                    key={cat}
-                    className={`${styles.categoryBtn} ${selectedCategory === cat ? styles.categoryBtnActive : ''}`}
-                    onClick={() => setSelectedCategory(cat)}
-                  >
-                    {cat === 'all' ? '全部' : cat}
-                  </button>
-                ))}
+              <div className={styles.categorySectionMain}>
+                <div className={styles.categorySection}>
+                  {categories.map(cat => (
+                    <button
+                      key={cat}
+                      className={`${styles.categoryBtn} ${selectedCategory === cat ? styles.categoryBtnActive : ''}`}
+                      onClick={() => setSelectedCategory(cat)}
+                    >
+                      {cat === 'all' ? '全部' : cat}
+                    </button>
+                  ))}
+                </div>
               </div>
 
               {
@@ -282,6 +284,12 @@ export default function TopMenuBar() {
                               dotWidth: 10,       // 修改指示点宽度 
                               dotOffset: 5,       // 修改指示点离边界的距离
                             },
+                            Tree: {
+                              nodeHoverBg: '#a0cfff',  // 修改悬停节点背景颜色
+                              nodeHoverColor: '#ffffff',  // 修改悬停节点文字颜色
+                              nodeSelectedBg: '#1890ff',  // 修改选中节点背景颜色
+                              nodeSelectedColor: '#ffffff',  // 修改选中节点文字颜色
+                            }
                           },
                         }} 
                       >
