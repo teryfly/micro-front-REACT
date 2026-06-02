@@ -13,6 +13,7 @@
   "license": "ISC",
   "description": "微前端主应用 - 配置驱动的容器应用",
   "dependencies": {
+    "antd": "^6.4.3",
     "jszip": "^3.10.1",
     "react": "^19.2.0",
     "react-dom": "^19.2.0",

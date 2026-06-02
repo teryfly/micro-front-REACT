@@ -79,6 +79,32 @@
   color: #333;
 }
 
+
+/* Carousel Styles */
+.carouselFilteredMenu {
+  height: 260px;
+  overflow-y: auto; 
+}
+.carouselFilteredMenuRow {
+  width: 100%;
+  padding: 15px 30px;
+  height: 260px;
+  display: flex !important;
+}
+.carouselFilteredMenuTree {
+  width: calc((100% - 60px) / 3);
+  height: 220px;
+  margin-right: 30px;
+  padding: 10px;
+  box-sizing: border-box;
+  border: 1px solid #d9d9d9;
+  border-radius: 8px;
+  box-shadow: 2px 2px 5px #d9d9d9;
+}
+.carouselFilteredMenuTree:nth-child(3n) { 
+  margin-right: 0;
+}
+
 @keyframes fadeIn {
   from {
     opacity: 0;
@@ -93,7 +119,8 @@
   top: 0;
   left: 0;
   right: 0;
-  height: 70vh;
+  min-height: 50vh;
+  max-height: 80vh;
   background-color: #ffffff;
   border-radius: 0 0 16px 16px;
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
@@ -202,10 +229,19 @@
   color: #ffffff;
 }
 
+.categoryBtnActive:hover{ 
+  color: #ffffff;
+  font-weight: 600;
+}
+
 .menuGrid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-  gap: 16px;
+  gap: 16px; 
+  margin-bottom: 50px;
+  max-height: 20vh;
+  overflow-y: auto;
+  overflow-x: hidden;
 }
 
 .emptyState {
@@ -257,4 +293,24 @@
     padding: 6px 12px;
     font-size: 13px;
   }
+}
+ 
+/* Carousel 颜色覆盖 箭头颜色、指示点颜色 */
+:global(.ant-carousel .slick-prev::after),
+:global(.ant-carousel .slick-next::after) {
+  border-color: var(--color-primary, #1890ff) !important;
+
+}
+:global(.slick-dots.slick-dots-bottom li) {
+  background-color:  #9cdcfa !important;
+}
+:global(.slick-dots.slick-dots-bottom .slick-active::after) {
+  background-color: var(--color-primary, #1890ff) !important;
+}
+
+:global(.ant-tree) {
+  width: 100%;
+  height: 100% !important;
+  overflow-y: auto;
+  overflow-x: hidden;
 }
