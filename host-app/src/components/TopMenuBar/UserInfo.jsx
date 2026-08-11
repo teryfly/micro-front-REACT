@@ -1,20 +1,23 @@
 /**
  * 用户信息组件
- * 显示用户头像和下拉菜单
+ * 展示单点登录返回的用户信息，并提供统一登出入口
  */
 
 import React, { useState, useRef, useEffect } from 'react';
+import { useAuth } from '../../auth';
 import styles from './UserInfo.module.css';
 
 export default function UserInfo() {
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef(null);
+  const { user, logout, expiresAt } = useAuth();
 
-  // 模拟用户信息（实际应从AuthContext获取）
+  // 用户信息来自认证中心 /connect/userinfo
   const userInfo = {
-    name: '管理员',
+    name: user?.name || user?.sub || '未登录',
     avatar: '👤',
-    role: 'Admin'
+    role: user?.role || '',
+    workno: user?.workno || '',
   };
 
   // 点击外部关闭下拉菜单
@@ -35,22 +38,22 @@ export default function UserInfo() {
   }, [isOpen]);
 
   const handleLogout = () => {
-    // 清除缓存
-    localStorage.clear();
-    sessionStorage.clear();
-    // 重定向到登录页（实际应用中的逻辑）
+    // 清理本地缓存后跳转认证中心统一登出
     console.log('[UserInfo] 退出登录');
-    window.location.href = '/login';
+    sessionStorage.clear();
+    logout();
   };
-  const clearCache =()=>{
+
+  const clearCache = () => {
     window.location.href = '/clear-cache.html';
-  }
+  };
 
   return (
     <div className={styles.userInfo} ref={dropdownRef}>
-      <div 
-        className={styles.userTrigger} 
+      <div
+        className={styles.userTrigger}
         onClick={() => setIsOpen(!isOpen)}
+        title={expiresAt ? `登录有效期至 ${new Date(expiresAt).toLocaleString()}` : ''}
       >
         <span className={styles.avatar}>{userInfo.avatar}</span>
         <span className={styles.userName}>{userInfo.name}</span>
@@ -60,19 +63,24 @@ export default function UserInfo() {
         <div className={styles.dropdown}>
           <div className={styles.dropdownItem}>
             <span>👤</span>
-            <span>个人中心</span>
-          </div>         
-           <div className={styles.dropdownItem}
-           onClick={clearCache}>
-            <span>🚪</span>
+            <span>
+              个人中心
+              {userInfo.role ? `（${userInfo.role}）` : ''}
+            </span>
+          </div>
+          {userInfo.workno ? (
+            <div className={styles.dropdownItem}>
+              <span>🪪</span>
+              <span>工号：{userInfo.workno}</span>
+            </div>
+          ) : null}
+          <div className={styles.dropdownItem} onClick={clearCache}>
+            <span>🧹</span>
             <span>清除缓存</span>
           </div>
           <div className={styles.divider}></div>
-          <div 
-            className={styles.dropdownItem}
-            onClick={handleLogout}
-          >
-            <span></span>
+          <div className={styles.dropdownItem} onClick={handleLogout}>
+            <span>🚪</span>
             <span>退出登录</span>
           </div>
         </div>

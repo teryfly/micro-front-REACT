@@ -13,10 +13,12 @@ import UrlSyncManager from '../../router/UrlSyncManager';
 import EventBus from '../../communication/EventBus';
 import PostMessageBridge from '../../communication/PostMessageBridge';
 import { MessageTypes } from '../../communication/messageProtocol';
+import { useAuth, getAuthorizationHeader, getAccessToken } from '../../auth';
 
 export default function SubAppWrapper({ appConfig, isActive, subRoute }) {
   const navigate = useNavigate();
   const { theme, themeVars } = useTheme();
+  const { user, tokenType, expiresAt, scopes, handleUnauthorized } = useAuth();
 
   useEffect(() => {
     console.log('[SubAppWrapper] Mounted:', {
@@ -61,6 +63,20 @@ export default function SubAppWrapper({ appConfig, isActive, subRoute }) {
 
     return unsubscribe;
   }, [appConfig.id, appConfig.config.route, isActive, navigate]);
+
+  // 登录态变化时同步给子应用（子应用可直接复用主应用令牌）
+  useEffect(() => {
+    if (!isActive) return;
+
+    PostMessageBridge.sendToSubApp(appConfig.id, MessageTypes.AUTH_STATE_UPDATE, {
+      accessToken: getAccessToken(),
+      authorization: getAuthorizationHeader(),
+      tokenType,
+      expiresAt,
+      scopes,
+      user,
+    });
+  }, [appConfig.id, isActive, tokenType, expiresAt, scopes, user]);
 
   // App mount/unmount notification
   useEffect(() => {
@@ -124,7 +140,20 @@ export default function SubAppWrapper({ appConfig, isActive, subRoute }) {
     appId: appConfig.config.appId, 
     // 同时传递系统ID，以备不时之需
     instanceId: appConfig.id,
-    version: '1.0.0'
+    version: '1.0.0',
+    // 单点登录信息：子应用直接复用主应用令牌，无需重复登录
+    auth: {
+      user,
+      scopes,
+      expiresAt,
+      tokenType,
+      /** 实时获取令牌，避免闭包拿到过期值 */
+      getAccessToken,
+      /** 直接用于请求头：Authorization: Bearer xxx */
+      getAuthorization: getAuthorizationHeader,
+      /** 子应用接口 401 时回调主应用重新走单点登录 */
+      onUnauthorized: handleUnauthorized,
+    }
   };
 
   const modulePath = './EmbeddedApp';
