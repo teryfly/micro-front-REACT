@@ -7,6 +7,7 @@ import { BrowserRouter } from 'react-router-dom';
 import { ConfigProvider } from './config/ConfigContext';
 import { ThemeProvider } from './theme/ThemeContext';
 import { NotificationProvider } from './context/NotificationContext';
+import { AuthProvider, AuthGuard } from './auth';
 import AppRouter from './router/AppRouter';
 import { initializeMenuConfig } from './utils/menuConfigInit';
 import './theme/globalStyles.css';
@@ -47,13 +48,20 @@ function AppInitializer() {
 
 /**
  * 根组件
+ *
+ * 鉴权顺序：AuthProvider 校验登录态 -> AuthGuard 拦截未登录/无权限
+ * -> 通过后才初始化菜单配置与路由，保证所有业务请求都带上令牌。
  */
 export default function App() {
   return (
     <ConfigProvider>
       <ThemeProvider>
         <NotificationProvider>
-          <AppInitializer />
+          <AuthProvider>
+            <AuthGuard>
+              <AppInitializer />
+            </AuthGuard>
+          </AuthProvider>
         </NotificationProvider>
       </ThemeProvider>
     </ConfigProvider>

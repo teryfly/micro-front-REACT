@@ -1,6 +1,75 @@
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 const ModuleFederationPlugin = require('webpack/lib/container/ModuleFederationPlugin');
+const webpack = require('webpack');
 const path = require('path');
+const fs = require('fs');
+
+/**
+ * 解析 .env 文件（零依赖实现，避免引入 dotenv）
+ * @param {string} file 文件绝对路径
+ * @returns {Object}
+ */
+function parseEnvFile(file) {
+  if (!fs.existsSync(file)) return {};
+
+  const result = {};
+  fs.readFileSync(file, 'utf8')
+    .split(/\r?\n/)
+    .forEach((line) => {
+      const trimmed = line.trim();
+      if (!trimmed || trimmed.startsWith('#')) return;
+
+      const index = trimmed.indexOf('=');
+      if (index === -1) return;
+
+      const key = trimmed.slice(0, index).trim();
+      let value = trimmed.slice(index + 1).trim();
+      if (
+        (value.startsWith('"') && value.endsWith('"')) ||
+        (value.startsWith("'") && value.endsWith("'"))
+      ) {
+        value = value.slice(1, -1);
+      }
+      result[key] = value;
+    });
+
+  return result;
+}
+
+/**
+ * 收集需要注入浏览器端的环境变量
+ * 优先级：shell 环境变量 > .env.[mode].local > .env.local > .env.[mode] > .env
+ * 仅注入 REACT_APP_ 前缀的变量 + NODE_ENV
+ * @returns {Object}
+ */
+function collectClientEnv() {
+  const mode = process.env.NODE_ENV || 'development';
+  const fileEnv = {
+    ...parseEnvFile(path.resolve(__dirname, '.env')),
+    ...parseEnvFile(path.resolve(__dirname, `.env.${mode}`)),
+    ...parseEnvFile(path.resolve(__dirname, '.env.local')),
+    ...parseEnvFile(path.resolve(__dirname, `.env.${mode}.local`)),
+  };
+
+  const clientEnv = { NODE_ENV: mode };
+
+  Object.keys(fileEnv)
+    .filter((key) => key.startsWith('REACT_APP_'))
+    .forEach((key) => {
+      clientEnv[key] = fileEnv[key];
+    });
+
+  // shell 环境变量优先级最高
+  Object.keys(process.env)
+    .filter((key) => key.startsWith('REACT_APP_'))
+    .forEach((key) => {
+      clientEnv[key] = process.env[key];
+    });
+
+  return clientEnv;
+}
+
+const clientEnv = collectClientEnv();
 
 module.exports = {
   entry: './src/index.js',
@@ -169,7 +238,10 @@ module.exports = {
   },
 
   output: {
-    publicPath: process.env.REACT_APP_PUBLIC_PATH || (process.env.NODE_ENV === 'production' ? './' : 'http://localhost:7000/'),
+    // 'auto' 让 webpack 在运行时根据当前页面地址（localhost / IP / 域名）自动确定资源路径，
+    // 避免把资源写死成 http://localhost:7000，从而支持用本机 IP 或任意域名访问而不白屏。
+    // shell 环境变量 REACT_APP_PUBLIC_PATH 可强制覆盖（用于生产 CDN 场景）。
+    publicPath: process.env.REACT_APP_PUBLIC_PATH || (process.env.NODE_ENV === 'production' ? './' : 'auto'),
     clean: true
   },
 
@@ -209,6 +281,14 @@ module.exports = {
   },
 
   plugins: [
+    /**
+     * 把 .env 中的 REACT_APP_* 注入到浏览器端
+     * 注意：这里整体替换 process.env，因此代码里可以安全使用 process.env.REACT_APP_XXX
+     */
+    new webpack.DefinePlugin({
+      'process.env': JSON.stringify(clientEnv),
+    }),
+
     new ModuleFederationPlugin({
       name: 'host',
 
